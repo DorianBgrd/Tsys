@@ -13,11 +13,23 @@
 #include "rapidjson/document.h"
 
 #include "api.h"
-#include "ResultStatus.h"
 
 
 namespace TSys
 {
+    enum class Status
+    {
+        None,
+        Failed,
+        Success
+    };
+
+    struct Success
+    {
+        bool status = false;
+    };
+
+
     // Declare types
     class TSYS_API Enum
     {
@@ -107,15 +119,15 @@ namespace TSys
         explicit AnyValue(std::any v);
 
         template<class T>
-        T Get(ResultStatus* success=nullptr)
+        T Get(Success* success=nullptr)
         {
             if (typeid(T).hash_code() != value.type().hash_code() && success)
             {
-                success->SetStatus(Status::Failed);
+                success->status = false;
             }
             else if (success)
             {
-                success->SetStatus(Status::Success);
+                success->status = true;
             }
 
             return std::any_cast<T>(value);
