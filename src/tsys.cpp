@@ -149,7 +149,7 @@ TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromApiName(std::string name
 }
 
 
-TSys::TypeRegistry TSys::TypeRegistry::registry = nullptr;
+TSys::TypeRegistry* TSys::TypeRegistry::registry = nullptr;
 
 
 TSys::TypeRegistry* TSys::TypeRegistry::GetRegistry()
