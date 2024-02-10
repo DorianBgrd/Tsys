@@ -14,10 +14,8 @@ add_library(
         Tsys
         SHARED
         src/tsys.cpp
+        src/defaultTypes.cpp
 )
-
-
-message("RAPIDJSON DIRECTORY : $ENV{RAPIDJSON_DIR}")
 
 
 target_include_directories(
