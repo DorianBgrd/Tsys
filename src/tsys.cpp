@@ -24,6 +24,19 @@ bool TSys::TypeHandler::CanConvertFrom(const std::any& value) const
 }
 
 
+TSys::TypeRegistry::TypeRegistry()
+{
+    RegisterType<TSys::Enum, TSys::EnumHandler>();
+    RegisterType<TSys::AnyValue, TSys::AnyHandler>();
+    RegisterType<std::string, StringHandler>();
+    RegisterType<bool, BoolHandler>();
+    RegisterType<int, IntHandler>();
+    RegisterType<float, FloatHandler>();
+    RegisterType<double, DoubleHandler>();
+    RegisterType<None, NoneHandler>();
+}
+
+
 size_t TSys::TypeRegistry::GetHashFromName(std::string name, bool& success)
 {
 	if (hashesPerNames.find(name) == hashesPerNames.end())

@@ -245,7 +245,7 @@ namespace TSys
         /**
          * Constructor (default).
          */
-        TypeRegistry() = default;
+        TypeRegistry();
 
 	public:
 		size_t GetHashFromName(std::string name, bool& success);

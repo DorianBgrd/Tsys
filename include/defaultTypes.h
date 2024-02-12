@@ -1,5 +1,5 @@
 #pragma once
-#include "include/tsys.h"
+#include "tsys.h"
 
 //#ifndef BOOST_PYTHON_STATIC_LIB
 //#define BOOST_PYTHON_STATIC_LIB

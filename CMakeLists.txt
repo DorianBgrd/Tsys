@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 add_definitions(/DTSYS_API_EXPORT)
 
 
-find_package(Boost 1.77.0 COMPONENTS python39 REQUIRED)
-find_package(Python 3 REQUIRED COMPONENTS Development Interpreter)
+find_package(Boost 1.77.0 COMPONENTS python310 REQUIRED)
+find_package(Python 3.9 REQUIRED COMPONENTS Development Interpreter)
 
 
 add_library(
