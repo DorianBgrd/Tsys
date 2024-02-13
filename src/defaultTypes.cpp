@@ -344,7 +344,7 @@ void TSys::StringHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue
     rapidjson::Value stringValue(rapidjson::kStringType);
 
     size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -371,7 +371,7 @@ void TSys::StringHandler::SerializeConstruction(std::any v, rapidjson::Value& va
                                                        rapidjson::Document& doc) const
 {
     bool success;
-    std::string vname = TypeRegistry::GetRegistry()->GetNameFromHash(v.type().hash_code(), success);
+    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(v.type().hash_code(), success);
 
     // jsonValue.PushBack(rapidjson::StringRef(vname.c_str()), doc.GetAllocator());
     value.PushBack(
@@ -467,7 +467,7 @@ void TSys::BoolHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
     rapidjson::Value stringValue(rapidjson::kStringType);
 
     size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -492,7 +492,7 @@ void TSys::BoolHandler::SerializeConstruction(std::any v, rapidjson::Value& valu
                                                          rapidjson::Document& doc) const
 {
     bool success;
-    std::string vname = TypeRegistry::GetRegistry()->GetNameFromHash(v.type().hash_code(), success);
+    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(v.type().hash_code(), success);
 
     // jsonValue.PushBack(rapidjson::StringRef(vname.c_str()), doc.GetAllocator());
     value.PushBack(
@@ -595,7 +595,7 @@ void TSys::IntHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
     rapidjson::Value stringValue(rapidjson::kStringType);
 
     size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -620,7 +620,7 @@ void TSys::IntHandler::SerializeConstruction(std::any v, rapidjson::Value& value
                                                     rapidjson::Document& doc) const
 {
     bool success;
-    std::string vname = TypeRegistry::GetRegistry()->GetNameFromHash(v.type().hash_code(), success);
+    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(v.type().hash_code(), success);
 
     // jsonValue.PushBack(rapidjson::StringRef(vname.c_str()), doc.GetAllocator());
     value.PushBack(
@@ -722,7 +722,7 @@ void TSys::FloatHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
     bool success;
 
     size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -839,7 +839,7 @@ void TSys::DoubleHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue
     bool success;
 
     size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -983,7 +983,7 @@ void TSys::EnumHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
     rapidjson::Value stringValue(rapidjson::kStringType);
 
     size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -1164,7 +1164,7 @@ std::any TSys::AnyHandler::DeserializeValue(std::any v, rapidjson::Value& value)
     rapidjson::Value& typeValue = value[1];
 
     bool success = false;
-    size_t hash = TypeRegistry::GetRegistry()->GetHashFromName(name.GetString(), success);
+    size_t hash = TypeRegistry::GetRegistry()->HashFromApiName(name.GetString(), success);
     if (!success)
     {
         return std::make_any<AnyValue>(val);

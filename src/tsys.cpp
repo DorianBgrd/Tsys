@@ -24,6 +24,12 @@ bool TSys::TypeHandler::CanConvertFrom(const std::any& value) const
 }
 
 
+bool TSys::TypeHandler::operator==(TypeHandler* h) const
+{
+    return Hash() == h->Hash();
+}
+
+
 TSys::TypeRegistry::TypeRegistry()
 {
     RegisterType<TSys::Enum, TSys::EnumHandler>();
@@ -39,39 +45,64 @@ TSys::TypeRegistry::TypeRegistry()
 
 size_t TSys::TypeRegistry::GetHashFromName(std::string name, bool& success)
 {
-	if (hashesPerNames.find(name) == hashesPerNames.end())
-	{
-		success = false;
-		return size_t();
-	}
+    for (auto* h : handlers)
+    {
+        if (h->Name() == name)
+        {
+            success = true;
+            return h->Hash();
+        }
+    }
 
-	success = true;
-	return hashesPerNames.at(name);
+    success = false;
+    return {};
 }
 
 
 std::string TSys::TypeRegistry::GetNameFromHash(size_t hash, bool& success)
 {
-	if (namesPerHashes.find(hash) == namesPerHashes.end())
-	{
-		success = false;
-		return std::string();
-	}
+    for (auto* h : handlers)
+    {
+        if (h->Hash() == hash)
+        {
+            success = true;
+            return h->Name();
+        }
+    }
+    success = false;
+    return {};
+}
 
-	success = true;
-	return namesPerHashes.at(hash);
+
+std::string TSys::TypeRegistry::GetApiNameFromHash(size_t hash, bool& success)
+{
+    for (auto* h : handlers)
+    {
+        if (h->Hash() == hash)
+        {
+            success = true;
+            return h->ApiName();
+        }
+    }
+
+    success = false;
+    return {};
 }
 
 
 size_t TSys::TypeRegistry::GetHashFromPythonType(std::string name, bool& success)
 {
-	if (hashesPerPythonNames.find(name) == hashesPerPythonNames.end())
-	{
-		success = false;
-		return size_t();
-	}
+    for (auto* h : handlers)
+    {
+        if (h->Name() == name)
+        {
+            success = true;
+            return h->Hash();
+        }
+    }
 
-	return hashesPerPythonNames.at(name);
+    success = false;
+	return {};
 }
 
 
@@ -80,85 +111,101 @@ bool TSys::TypeRegistry::RegisterType(
             bool force
 		)
 {
-    if ((std::find(hashes.begin(), hashes.end(), hash) != hashes.end()) && !force)
+    if (!force && handlers.find(handler) != handlers.end())
     {
         return false;
     }
 
-    hashes.push_back(hash);
-    hashesHandlers[hash] = handler;
-    pythonNamesPerHashes[hash] = handler->PythonName();
-    namesPerHashes[hash] = handler->Name();
-    hashesPerNames[handler->Name()] = hash;
-    hashesPerPythonNames[handler->PythonName()] = hash;
-    hashesPerApiNames[handler->ApiName()] = hash;
+    handlers.insert(handler);
     return true;
 }
 
 
-size_t TSys::TypeRegistry::HashFromPythonTypeName(std::string name)
+size_t TSys::TypeRegistry::HashFromPythonTypeName(std::string name, bool& success)
 {
-	if (hashesPerPythonNames.find(name) == hashesPerPythonNames.end())
-	{
-		return -1;
-	}
+    for (auto* h : handlers)
+    {
+        if (h->PythonName() == name)
+        {
+            success = true;
+            return h->Hash();
+        }
+    }
 
-	return hashesPerPythonNames.at(name);
+    success = false;
+    return {};
 }
 
 
-size_t TSys::TypeRegistry::HashFromApiName(std::string name)
+size_t TSys::TypeRegistry::HashFromApiName(std::string name, bool& success)
 {
-    if (hashesPerApiNames.find(name) == hashesPerApiNames.end())
+    for (auto* h : handlers)
     {
-        return -1;
+        if (h->ApiName() == name)
+        {
+            success = true;
+            return h->Hash();
+        }
     }
 
-    return hashesPerApiNames.at(name);
+    success = false;
+    return {};
 }
 
 
 TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(size_t hash)
 {
-    if (std::find(hashes.begin(), hashes.end(), hash) == hashes.end())
+    for (auto* h : handlers)
     {
-        return nullptr;
+        if (h->Hash() == hash)
+        {
+            return h;
+        }
     }
 
-    return hashesHandlers.at(hash);
+    return nullptr;
 }
 
 
 TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromName(std::string name)
 {
-    if (hashesPerNames.find(name) == hashesPerNames.end())
+    for (auto* h : handlers)
     {
-        return nullptr;
+        if (h->Name() == name)
+        {
+            return h;
+        }
     }
 
-    return GetTypeHandle(hashesPerNames.at(name));
+    return nullptr;
 }
 
 
 TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromPythonName(std::string name)
 {
-    if (hashesPerPythonNames.find(name) == hashesPerPythonNames.end())
+    for (auto* h : handlers)
     {
-        return nullptr;
+        if (h->PythonName() == name)
+        {
+            return h;
+        }
     }
 
-    return GetTypeHandle(hashesPerPythonNames.at(name));
+    return nullptr;
 }
 
 
 TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromApiName(std::string name)
 {
-    if (hashesPerApiNames.find(name) == hashesPerApiNames.end())
+    for (auto* h : handlers)
     {
-        return nullptr;
+        if (h->ApiName() == name)
+        {
+            return h;
+        }
     }
 
-    return GetTypeHandle(hashesPerApiNames.at(name));
+    return nullptr;
 }
 
 

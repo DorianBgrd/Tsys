@@ -5,6 +5,7 @@
 //#endif
 #include <map>
 #include <vector>
+#include <set>
 #include <string>
 #include <typeinfo>
 #include <any>
@@ -188,6 +189,8 @@ namespace TSys
           * @return bool convertible from.
           */
         virtual bool CanConvertFrom(const std::any& value) const;
+
+        bool operator==(TypeHandler* h) const;
     };
 
 
@@ -234,13 +237,7 @@ namespace TSys
         static TypeRegistry* registry;
 
 	protected:
-        std::vector<size_t> hashes;
-		std::unordered_map<size_t, TypeHandler*> hashesHandlers;
-		std::unordered_map<size_t, std::string> namesPerHashes;
-		std::unordered_map<size_t, std::string> pythonNamesPerHashes;
-		std::unordered_map<std::string, size_t> hashesPerNames;
-		std::unordered_map<std::string, size_t> hashesPerPythonNames;
-		std::unordered_map<std::string, size_t> hashesPerApiNames;
+        std::set<TypeHandler*> handlers;
 
         /**
          * Constructor (default).
@@ -252,11 +249,13 @@ namespace TSys
 
 		std::string GetNameFromHash(size_t hash, bool& success);
 
+        std::string GetApiNameFromHash(size_t hash, bool& success);
+
         size_t GetHashFromPythonType(std::string name, bool& success);
 
-        size_t HashFromPythonTypeName(std::string name);
+        size_t HashFromPythonTypeName(std::string name, bool& success);
 
-        size_t HashFromApiName(std::string name);
+        size_t HashFromApiName(std::string name, bool& success);
 
         bool RegisterType(size_t hash, TypeHandler* handler, bool force=false);
 
