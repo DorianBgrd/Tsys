@@ -7,3 +7,4 @@ The type system aims at being embedded through other applications.
 It uses Somme external dependencies :
  - boost python
  - rapidjson
+ - python
