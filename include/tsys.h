@@ -285,6 +285,12 @@ namespace TSys
 
         TypeHandler* GetTypeHandleFromApiName(std::string name);
 
+        template<class T>
+        TypeHandler* GetTypeHandle()
+        {
+            return GetTypeHandle(typeid(T).hash_code());
+        }
+
         static TypeRegistry* GetRegistry();
 	};
 
