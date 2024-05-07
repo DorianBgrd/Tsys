@@ -5,9 +5,10 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_definitions(/DTSYS_API_EXPORT)
 
+set(BOOST_ROOT $ENV{BOOST_ROOT})
 
-find_package(Boost 1.77.0 COMPONENTS python310 REQUIRED)
-find_package(Python 3.9 REQUIRED COMPONENTS Development Interpreter)
+find_package(Boost 1.82.0 COMPONENTS python311 REQUIRED)
+find_package(Python 3.11 REQUIRED COMPONENTS Development Interpreter)
 
 
 set(
