@@ -121,6 +121,27 @@ bool TSys::TypeRegistry::RegisterType(
 }
 
 
+class MatchHash
+{
+    size_t hash;
+public:
+    MatchHash(size_t h) {hash = h;}
+
+    bool operator()(TSys::TypeHandler* f) const
+    {
+        return (f->Hash() == hash);
+    }
+};
+
+
+bool TSys::TypeRegistry::IsRegistered(size_t hash) const
+{
+    auto h = std::find_if(handlers.begin(), handlers.end(), MatchHash(hash));
+
+    return (h != handlers.end());
+}
+
+
 size_t TSys::TypeRegistry::HashFromPythonTypeName(std::string name, bool& success)
 {
     for (auto* h : handlers)

@@ -259,6 +259,8 @@ namespace TSys
 
         bool RegisterType(size_t hash, TypeHandler* handler, bool force=false);
 
+        bool IsRegistered(size_t hash) const;
+
         template<class T>
         bool RegisterType(
                 TypeHandler* handler,
