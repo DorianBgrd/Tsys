@@ -44,16 +44,16 @@ namespace TSys
         Enum(const Enum& other);
 
 
-        Enum(std::map<unsigned int, std::string> v);
+        Enum(const std::map<unsigned int, std::string>& v);
 
 
-        Enum(std::map<unsigned int, std::string> v, unsigned int i);
+        Enum(const std::map<unsigned int, std::string>& v, unsigned int i);
 
 
-        Enum(std::vector<std::string> v);
+        Enum(const std::vector<std::string>& v);
 
 
-        Enum(std::vector<std::string> v, unsigned int i);
+        Enum(const std::vector<std::string>& v, unsigned int i);
 
 
         std::string CurrentValue() const;
@@ -76,15 +76,11 @@ namespace TSys
 
         std::string ValueAtIndex(int index);
 
-        bool operator ==(Enum& other) const
-        {
-            return (CurrentValue() == other.CurrentValue());
-        }
 
-        bool operator ==(const Enum* other) const
-        {
-            return (CurrentValue() == other->CurrentValue());
-        }
+        bool operator ==(const Enum& other) const;
+
+
+        bool operator ==(const Enum* other) const;
     };
 
 
@@ -96,9 +92,9 @@ namespace TSys
 
         static size_t Hash();
 
-        static bool IsInvalid(std::any other);
+        static bool IsInvalid(const std::any& other);
 
-        static bool IsValid(std::any other);
+        static bool IsValid(const std::any& other);
     };
 
 
@@ -139,7 +135,7 @@ namespace TSys
             value = std::make_any<T>(newValue);
         }
 
-        void SetInput(std::any val);
+        void SetInput(const std::any& val);
 
         size_t Hash() const;
 
@@ -149,7 +145,7 @@ namespace TSys
 
         boost::python::object Python_Get();
 
-        void Python_Set(boost::python::object val);
+        bool Python_Set(boost::python::object val);
 
         std::any ConvertTo(size_t hash);
 
@@ -195,20 +191,22 @@ namespace TSys
 
         std::string PythonName() const override;
 
+        std::string PythonModule() const override;
+
         std::any InitValue() const override;
 
-        std::any CopyValue(std::any source) const override;
+        std::any CopyValue(const std::any& source) const override;
 
-        std::any FromPython(boost::python::object obj) const override;
+        std::any FromPython(const boost::python::object& obj) const override;
 
-        boost::python::object ToPython(std::any value) const override;
+        boost::python::object ToPython(const std::any& value) const override;
 
-        void SerializeValue(std::any v, rapidjson::Value& jsonValue,
+        void SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                             rapidjson::Document& doc) const override;
 
-        std::any DeserializeValue(std::any, rapidjson::Value& value) const override;
+        std::any DeserializeValue(const std::any& v, rapidjson::Value& value) const override;
 
-        void SerializeConstruction(std::any v, rapidjson::Value& value,
+        void SerializeConstruction(const std::any& v, rapidjson::Value& value,
                                    rapidjson::Document& doc) const override;
 
         std::any DeserializeConstruction(rapidjson::Value& value) const override;
@@ -224,20 +222,22 @@ namespace TSys
 
         std::any InitValue() const override;
 
-        std::any CopyValue(std::any source) const override;
+        std::any CopyValue(const std::any& source) const override;
 
         std::string PythonName() const override;
 
-        std::any FromPython(boost::python::object obj) const override;
+        std::string PythonModule() const override;
 
-        boost::python::object ToPython(std::any value) const override;
+        std::any FromPython(const boost::python::object& obj) const override;
 
-        void SerializeValue(std::any v, rapidjson::Value& jsonValue,
+        boost::python::object ToPython(const std::any& value) const override;
+
+        void SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                             rapidjson::Document& doc) const override;
 
-        std::any DeserializeValue(std::any, rapidjson::Value& value) const override;
+        std::any DeserializeValue(const std::any&, rapidjson::Value& value) const override;
 
-        void SerializeConstruction(std::any v, rapidjson::Value& value,
+        void SerializeConstruction(const std::any& v, rapidjson::Value& value,
                                    rapidjson::Document& doc) const override;
 
         std::any DeserializeConstruction(rapidjson::Value& value) const override;
@@ -254,20 +254,22 @@ namespace TSys
 
         std::any InitValue() const override;
 
-        std::any CopyValue(std::any source) const override;
+        std::any CopyValue(const std::any& source) const override;
 
         std::string PythonName() const override;
 
-        std::any FromPython(boost::python::object obj) const override;
+        std::string PythonModule() const override;
 
-        boost::python::object ToPython(std::any value) const override;
+        std::any FromPython(const boost::python::object& obj) const override;
 
-        void SerializeValue(std::any v, rapidjson::Value& jsonValue,
+        boost::python::object ToPython(const std::any& value) const override;
+
+        void SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                             rapidjson::Document& doc) const override;
 
-        std::any DeserializeValue(std::any, rapidjson::Value& value) const override;
+        std::any DeserializeValue(const std::any&, rapidjson::Value& value) const override;
 
-        void SerializeConstruction(std::any v, rapidjson::Value& value,
+        void SerializeConstruction(const std::any&, rapidjson::Value& value,
                                    rapidjson::Document& doc) const override;
 
         std::any DeserializeConstruction(rapidjson::Value& value) const override;
@@ -283,20 +285,22 @@ namespace TSys
 
         std::string PythonName() const override;
 
+        std::string PythonModule() const override;
+
         std::any InitValue() const override;
 
-        std::any CopyValue(std::any source) const override;
+        std::any CopyValue(const std::any& source) const override;
 
-        std::any FromPython(boost::python::object obj) const override;
+        std::any FromPython(const boost::python::object& obj) const override;
 
-        boost::python::object ToPython(std::any value) const override;
+        boost::python::object ToPython(const std::any& value) const override;
 
-        void SerializeValue(std::any v, rapidjson::Value& jsonValue,
+        void SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                             rapidjson::Document& doc) const override;
 
-        std::any DeserializeValue(std::any, rapidjson::Value& value) const override;
+        std::any DeserializeValue(const std::any&, rapidjson::Value& value) const override;
 
-        void SerializeConstruction(std::any v, rapidjson::Value& value,
+        void SerializeConstruction(const std::any& v, rapidjson::Value& value,
                                    rapidjson::Document& doc) const override;
 
         std::any DeserializeConstruction(rapidjson::Value& value) const override;
@@ -312,20 +316,22 @@ namespace TSys
 
         std::string PythonName() const override;
 
+        std::string PythonModule() const override;
+
         std::any InitValue() const override;
 
-        std::any CopyValue(std::any source) const override;
+        std::any CopyValue(const std::any& source) const override;
 
-        std::any FromPython(boost::python::object obj) const override;
+        std::any FromPython(const boost::python::object& obj) const override;
 
-        boost::python::object ToPython(std::any value) const override;
+        boost::python::object ToPython(const std::any& value) const override;
 
-        void SerializeValue(std::any v, rapidjson::Value& jsonValue,
+        void SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                             rapidjson::Document& doc) const override;
 
-        std::any DeserializeValue(std::any, rapidjson::Value& value) const override;
+        std::any DeserializeValue(const std::any&, rapidjson::Value& value) const override;
 
-        void SerializeConstruction(std::any v, rapidjson::Value& value,
+        void SerializeConstruction(const std::any& v, rapidjson::Value& value,
                                    rapidjson::Document& doc) const override;
 
         std::any DeserializeConstruction(rapidjson::Value& value) const override;
@@ -351,30 +357,32 @@ namespace TSys
 
         std::string PythonName() const override;
 
+        std::string PythonModule() const override;
+
         std::any InitValue() const override;
 
-        std::any CopyValue(std::any source) const override;
+        std::any CopyValue(const std::any& source) const override;
 
-        std::any FromPython(boost::python::object obj) const override;
+        std::any FromPython(const boost::python::object& obj) const override;
 
-        boost::python::object ToPython(std::any value) const override;
+        boost::python::object ToPython(const std::any& value) const override;
 
-        void SerializeValue(std::any v, rapidjson::Value& jsonValue,
+        void SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                             rapidjson::Document& doc) const override;
 
-        std::any DeserializeValue(std::any, rapidjson::Value& value)
+        std::any DeserializeValue(const std::any&, rapidjson::Value& value)
                                   const override;
 
-        void SerializeConstruction(std::any v, rapidjson::Value& value,
+        void SerializeConstruction(const std::any& v, rapidjson::Value& value,
                                    rapidjson::Document& doc)
                                    const override;
 
         std::any DeserializeConstruction(rapidjson::Value& value)
                                          const override;
 
-        size_t ValueHash(std::any value) const override;
+        size_t ValueHash(const std::any& value) const override;
 
-        bool CompareValue(std::any v1, std::any v2) const override
+        bool CompareValue(const std::any& v1, const std::any& v2) const override
         {
             Enum ev1;
             Enum ev2;
@@ -413,43 +421,28 @@ namespace TSys
 
         std::any InitValue() const override;
 
-        std::any CopyValue(std::any source) const override;
+        std::any CopyValue(const std::any& source) const override;
 
-        std::any FromPython(boost::python::object obj) const override;
+        std::any FromPython(const boost::python::object& obj) const override;
 
-        boost::python::object ToPython(std::any value) const override;
+        boost::python::object ToPython(const std::any& value) const override;
 
-        void SerializeValue(std::any v, rapidjson::Value& jsonValue,
+        void SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                             rapidjson::Document& doc) const override;
 
-        std::any DeserializeValue(std::any, rapidjson::Value& value)
+        std::any DeserializeValue(const std::any&, rapidjson::Value& value)
                                   const override;
 
-        void SerializeConstruction(std::any v, rapidjson::Value& value,
+        void SerializeConstruction(const std::any& v, rapidjson::Value& value,
                                    rapidjson::Document& doc)
                                    const override;
 
         std::any DeserializeConstruction(rapidjson::Value& value)
                                          const override;
 
-        size_t ValueHash(std::any val) const override;
+        size_t ValueHash(const std::any& val) const override;
 
-        bool CompareValue(std::any v1, std::any v2) const override
-        {
-            AnyValue av1;
-            AnyValue av2;
-            try
-            {
-                av1 = std::any_cast<AnyValue>(v1);
-                av2 = std::any_cast<AnyValue>(v2);
-            }
-            catch(std::bad_any_cast&)
-            {
-                return false;
-            }
-
-            return (av1 == av2);
-        }
+        bool CompareValue(const std::any& v1, const std::any& v2) const override;
     };
 
 
@@ -473,26 +466,26 @@ namespace TSys
 
         std::any InitValue() const override;
 
-        std::any CopyValue(std::any source) const override;
+        std::any CopyValue(const std::any& source) const override;
 
-        std::any FromPython(boost::python::object obj) const override;
+        std::any FromPython(const boost::python::object& obj) const override;
 
-        boost::python::object ToPython(std::any value) const override;
+        boost::python::object ToPython(const std::any& value) const override;
 
-        void SerializeValue(std::any v, rapidjson::Value& jsonValue,
+        void SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                             rapidjson::Document& doc) const override;
 
-        std::any DeserializeValue(std::any, rapidjson::Value& value)
+        std::any DeserializeValue(const std::any&, rapidjson::Value& value)
                                   const override;
 
-        void SerializeConstruction(std::any v, rapidjson::Value& value,
+        void SerializeConstruction(const std::any& v, rapidjson::Value& value,
                                    rapidjson::Document& doc)
                                    const override;
 
         std::any DeserializeConstruction(rapidjson::Value& value)
                                          const override;
 
-        size_t ValueHash(std::any val) const override;
+        size_t ValueHash(const std::any& val) const override;
     };
 
 }

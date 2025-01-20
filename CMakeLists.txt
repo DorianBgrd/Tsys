@@ -5,10 +5,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_definitions(/DTSYS_API_EXPORT)
 
-set(BOOST_ROOT $ENV{BOOST_ROOT})
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_DIR $ENV{BOOST_DIR})
 
-find_package(Boost 1.82.0 COMPONENTS python311 REQUIRED)
 find_package(Python 3.11 REQUIRED COMPONENTS Development Interpreter)
+find_package(Boost 1.82.0 COMPONENTS python311 REQUIRED HINTS $ENV{BOOST_ROOT})
 
 
 set(
@@ -16,6 +17,12 @@ set(
 
         src/tsys.cpp
         src/defaultTypes.cpp
+)
+
+set(
+        TSYS_INCLUDES
+        include/tsys.h
+        include/defaultTypes.h
 )
 
 set(
@@ -70,10 +77,6 @@ target_link_libraries(
 )
 
 
-
-
-
-
 add_library(
         Tsys_Static
         STATIC
@@ -105,3 +108,15 @@ target_link_libraries(
         Python::Python
         Python::Module
 )
+
+
+set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install/Tsys)
+
+
+install(TARGETS Tsys DESTINATION bin
+        CONFIGURATIONS Debug Release)
+
+install(FILES ${TSYS_INCLUDES}
+        DESTINATION include)
+
+export(TARGETS Tsys FILE ${CMAKE_SOURCE_DIR}/install/Tsys/FindTSys.cmake)

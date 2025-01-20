@@ -78,7 +78,7 @@ namespace TSys
          * @param rapidjson::Value& value: json value.
          * @param rapidjson::Document document: json doc.
          */
-        virtual void SerializeValue(std::any v, rapidjson::Value& value,
+        virtual void SerializeValue(const std::any& v, rapidjson::Value& value,
                                     rapidjson::Document& document) const = 0;
 
         /**
@@ -88,7 +88,7 @@ namespace TSys
          * @param rapidjson::Document document: json doc.
          * @return std::any deserialized value.
          */
-        virtual std::any DeserializeValue(std::any v, rapidjson::Value& value) const = 0;
+        virtual std::any DeserializeValue(const std::any& v, rapidjson::Value& value) const = 0;
 
         /**
          * Serializes type construction.
@@ -96,7 +96,7 @@ namespace TSys
          * @param rapidjson::Value& value: json value.
          * @param rapidjson::Document document: json doc.
          */
-        virtual void SerializeConstruction(std::any v, rapidjson::Value& value,
+        virtual void SerializeConstruction(const std::any& v, rapidjson::Value& value,
                                            rapidjson::Document& document) const = 0;
 
         /**
@@ -118,26 +118,28 @@ namespace TSys
          * Compares 2 values.
          * @return bool: comparison.
          */
-        virtual bool CompareValue(std::any, std::any) const = 0;
+        virtual bool CompareValue(const std::any&, const std::any&) const = 0;
 
         /**
          * Converts from python object.
          * @return std::any value.
          */
-        virtual std::any FromPython(boost::python::object) const = 0;
+        virtual std::any FromPython(const boost::python::object&) const = 0;
 
         /**
          * Converts to python.
          * @return boost::python::object: boost python object.
          */
-        virtual boost::python::object ToPython(std::any) const = 0;
+        virtual boost::python::object ToPython(const std::any&) const = 0;
+
+        bool HoldsPythonObject(const boost::python::object& o) const;
 
         /**
          * Copies value.
          * @param std::any source: source value.
          * @return std::any copy.
          */
-        virtual std::any CopyValue(std::any source) const = 0;
+        virtual std::any CopyValue(const std::any& source) const = 0;
 
         /**
          * Returns handled type hash.
@@ -150,6 +152,12 @@ namespace TSys
          * @return std::string type name.
          */
         virtual std::string Name() const = 0;
+
+        /**
+         * Returns optional python module.
+         * @return std::string module name.
+         */
+        virtual std::string PythonModule() const;
 
         /**
          * Returns python type name.
@@ -169,7 +177,7 @@ namespace TSys
          * @param std::any val: value.
          * @return size_t hash.
          */
-        virtual size_t ValueHash(std::any val) const = 0;
+        virtual size_t ValueHash(const std::any& val) const = 0;
 
     public:
         /**
@@ -207,7 +215,7 @@ namespace TSys
             return std::string(typeid(T).name());
         }
 
-        bool CompareValue(std::any v1, std::any v2) const override
+        bool CompareValue(const std::any& v1, const std::any& v2) const override
         {
             return (std::any_cast<T>(v1) == std::any_cast<T>(v2));
         }
@@ -222,7 +230,7 @@ namespace TSys
             this->converters[typeid(From).hash_code()] = std::make_shared<StaticCastConverter<From, T>>();
         }
 
-        size_t ValueHash(std::any val) const override
+        size_t ValueHash(const std::any& val) const override
         {
             std::hash<T> hash{};
             T v = std::any_cast<T>(val);
@@ -245,17 +253,17 @@ namespace TSys
         TypeRegistry();
 
 	public:
-		size_t GetHashFromName(std::string name, bool& success);
+		size_t GetHashFromName(const std::string& name, bool& success);
 
 		std::string GetNameFromHash(size_t hash, bool& success);
 
         std::string GetApiNameFromHash(size_t hash, bool& success);
 
-        size_t GetHashFromPythonType(std::string name, bool& success);
+        size_t GetHashFromPythonType(const std::string& name, bool& success);
 
-        size_t HashFromPythonTypeName(std::string name, bool& success);
+        size_t HashFromPythonTypeName(const std::string& name, bool& success);
 
-        size_t HashFromApiName(std::string name, bool& success);
+        size_t HashFromApiName(const std::string& name, bool& success);
 
         bool RegisterType(size_t hash, TypeHandler* handler, bool force=false);
 
@@ -281,11 +289,13 @@ namespace TSys
 
         TypeHandler* GetTypeHandle(size_t hash);
 
-        TypeHandler* GetTypeHandleFromName(std::string name);
+        TypeHandler* GetTypeHandleFromName(const std::string& name);
 
-        TypeHandler* GetTypeHandleFromPythonName(std::string name);
+        TypeHandler* GetTypeHandleFromPythonName(const std::string& name);
 
-        TypeHandler* GetTypeHandleFromApiName(std::string name);
+        TypeHandler* GetTypeHandleFromPythonObject(const boost::python::object& o);
+
+        TypeHandler* GetTypeHandleFromApiName(const std::string& name);
 
         template<class T>
         TypeHandler* GetTypeHandle()

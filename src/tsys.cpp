@@ -5,6 +5,34 @@
 #include "include/defaultTypes.h"
 
 
+std::string TSys::TypeHandler::PythonModule() const
+{
+    return "";
+}
+
+
+bool TSys::TypeHandler::HoldsPythonObject(const boost::python::object& o) const
+{
+    std::string mod = PythonModule();
+    std::string cls = PythonName();
+
+    if (!mod.empty())
+    {
+        const std::string& pymodule = boost::python::extract<const std::string&>(
+                o.attr("__module__"));
+
+        const std::string& pyname = boost::python::extract<const std::string&>(
+                o.attr("__class__").attr("__name__"));
+
+        return (pymodule + "." + pyname) == (mod + "." + cls);
+    }
+
+    const std::string& pyobjame = boost::python::extract<const std::string&>(o.attr("__name__"));
+
+    return (PythonName() == pyobjame);
+}
+
+
 std::any TSys::TypeHandler::ConvertFrom(const std::any& sourceValue, std::any currentValue) const
 {
     if (!CanConvertFrom(sourceValue))
@@ -43,7 +71,7 @@ TSys::TypeRegistry::TypeRegistry()
 }
 
 
-size_t TSys::TypeRegistry::GetHashFromName(std::string name, bool& success)
+size_t TSys::TypeRegistry::GetHashFromName(const std::string& name, bool& success)
 {
     for (auto* h : handlers)
     {
@@ -90,7 +118,7 @@ std::string TSys::TypeRegistry::GetApiNameFromHash(size_t hash, bool& success)
 }
 
 
-size_t TSys::TypeRegistry::GetHashFromPythonType(std::string name, bool& success)
+size_t TSys::TypeRegistry::GetHashFromPythonType(const std::string& name, bool& success)
 {
     for (auto* h : handlers)
     {
@@ -142,7 +170,7 @@ bool TSys::TypeRegistry::IsRegistered(size_t hash) const
 }
 
 
-size_t TSys::TypeRegistry::HashFromPythonTypeName(std::string name, bool& success)
+size_t TSys::TypeRegistry::HashFromPythonTypeName(const std::string& name, bool& success)
 {
     for (auto* h : handlers)
     {
@@ -158,7 +186,7 @@ size_t TSys::TypeRegistry::HashFromPythonTypeName(std::string name, bool& succes
 }
 
 
-size_t TSys::TypeRegistry::HashFromApiName(std::string name, bool& success)
+size_t TSys::TypeRegistry::HashFromApiName(const std::string& name, bool& success)
 {
     for (auto* h : handlers)
     {
@@ -188,7 +216,7 @@ TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(size_t hash)
 }
 
 
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromName(std::string name)
+TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromName(const std::string& name)
 {
     for (auto* h : handlers)
     {
@@ -202,7 +230,7 @@ TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromName(std::string name)
 }
 
 
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromPythonName(std::string name)
+TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromPythonName(const std::string& name)
 {
     for (auto* h : handlers)
     {
@@ -216,7 +244,22 @@ TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromPythonName(std::string n
 }
 
 
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromApiName(std::string name)
+TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromPythonObject(
+        const boost::python::object& o)
+{
+    for (auto* h : handlers)
+    {
+        if (h->HoldsPythonObject(o))
+        {
+            return h;
+        }
+    }
+
+    return nullptr;
+}
+
+
+TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromApiName(const std::string& name)
 {
     for (auto* h : handlers)
     {

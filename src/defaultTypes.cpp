@@ -1,4 +1,3 @@
-#pragma once
 #include "include/defaultTypes.h"
 
 #include <boost/python.hpp>
@@ -24,21 +23,21 @@ TSys::Enum::Enum(const Enum& other)
 }
 
 
-TSys::Enum::Enum(std::map<unsigned int, std::string> v)
+TSys::Enum::Enum(const std::map<unsigned int, std::string>& v)
 {
     values = v;
     currentIndex = 0;
 }
 
 
-TSys::Enum::Enum(std::map<unsigned int, std::string> v, unsigned int i)
+TSys::Enum::Enum(const std::map<unsigned int, std::string>& v, unsigned int i)
 {
     values = v;
     currentIndex = i;
 }
 
 
-TSys::Enum::Enum(std::vector<std::string> v) {
+TSys::Enum::Enum(const std::vector<std::string>& v) {
     for (unsigned int i = 0; i < v.size(); i++) {
         values[i] = v[i];
     }
@@ -47,7 +46,7 @@ TSys::Enum::Enum(std::vector<std::string> v) {
 }
 
 
-TSys::Enum::Enum(std::vector<std::string> v, unsigned int i)
+TSys::Enum::Enum(const std::vector<std::string>& v, unsigned int i)
 {
     for (unsigned int u = 0; u < v.size(); u++)
     {
@@ -125,6 +124,18 @@ std::string TSys::Enum::ValueAtIndex(int index)
 }
 
 
+bool TSys::Enum::operator==(const Enum& other) const
+{
+    return (CurrentValue() == other.CurrentValue());
+}
+
+
+bool TSys::Enum::operator==(const Enum* other) const
+{
+    return (CurrentValue() == other->CurrentValue());
+}
+
+
 // Invalid Any Cast.
 size_t TSys::InvalidAnyCast::Hash()
 {
@@ -132,13 +143,13 @@ size_t TSys::InvalidAnyCast::Hash()
 }
 
 
-bool TSys::InvalidAnyCast::IsInvalid(std::any other)
+bool TSys::InvalidAnyCast::IsInvalid(const std::any& other)
 {
     return (other.type().hash_code() == Hash());
 }
 
 
-bool TSys::InvalidAnyCast::IsValid(std::any other)
+bool TSys::InvalidAnyCast::IsValid(const std::any& other)
 {
     return (!IsInvalid(other));
 }
@@ -151,7 +162,7 @@ TSys::AnyValue::AnyValue(std::any v)
 }
 
 
-void TSys::AnyValue::SetInput(std::any val)
+void TSys::AnyValue::SetInput(const std::any& val)
 {
     value = val;
 }
@@ -179,26 +190,22 @@ boost::python::object TSys::AnyValue::Python_Get()
     auto* handler = TypeRegistry::GetRegistry()->GetTypeHandle(Hash());
     if (!handler)
     {
-        return boost::python::object();
+        return {};
     }
 
     return handler->ToPython(value);
 }
 
-void TSys::AnyValue::Python_Set(boost::python::object val)
+bool TSys::AnyValue::Python_Set(boost::python::object val)
 {
-    boost::python::extract<boost::python::object> objectExtractor(val);
-    boost::python::object extractor = objectExtractor();
-
-    std::string pytype = boost::python::extract<std::string>(extractor.attr("__class__").attr("__name__"));
-
-    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandleFromPythonName(pytype);
+    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandleFromPythonObject(val);
     if (!handler)
     {
-        return ;
+        return false;
     }
 
     value = handler->FromPython(val);
+    return true;
 }
 
 std::any TSys::AnyValue::ConvertTo(size_t hash)
@@ -299,7 +306,7 @@ std::any TSys::StringHandler::InitValue() const
 }
 
 
-std::any TSys::StringHandler::CopyValue(std::any source) const
+std::any TSys::StringHandler::CopyValue(const std::any& source) const
 {
     std::string value = std::string(std::any_cast<std::string>(source));
 
@@ -319,7 +326,13 @@ std::string TSys::StringHandler::PythonName() const
 }
 
 
-std::any TSys::StringHandler::FromPython(boost::python::object obj) const
+std::string TSys::StringHandler::PythonModule() const
+{
+    return "builtins";
+}
+
+
+std::any TSys::StringHandler::FromPython(const boost::python::object& obj) const
 {
     if (!PyUnicode_Check(obj.ptr()))
     {
@@ -331,14 +344,14 @@ std::any TSys::StringHandler::FromPython(boost::python::object obj) const
 }
 
 
-boost::python::object TSys::StringHandler::ToPython(std::any value) const
+boost::python::object TSys::StringHandler::ToPython(const std::any& value) const
 {
     return boost::python::object(std::any_cast<std::string>(value));
 }
 
 
-void TSys::StringHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
-                                                rapidjson::Document& doc) const
+void TSys::StringHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
+                                         rapidjson::Document& doc) const
 {
     bool success;
     rapidjson::Value stringValue(rapidjson::kStringType);
@@ -359,7 +372,7 @@ void TSys::StringHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue
 }
 
 
-std::any TSys::StringHandler::DeserializeValue(std::any, rapidjson::Value& value) const
+std::any TSys::StringHandler::DeserializeValue(const std::any&, rapidjson::Value& value) const
 {
     rapidjson::Value& result = value.GetArray()[1];
     std::string res = result.GetString();
@@ -367,8 +380,8 @@ std::any TSys::StringHandler::DeserializeValue(std::any, rapidjson::Value& value
 }
 
 
-void TSys::StringHandler::SerializeConstruction(std::any v, rapidjson::Value& value,
-                                                       rapidjson::Document& doc) const
+void TSys::StringHandler::SerializeConstruction(const std::any& v, rapidjson::Value& value,
+                                                rapidjson::Document& doc) const
 {
     bool success;
     std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(v.type().hash_code(), success);
@@ -433,7 +446,7 @@ std::any TSys::BoolHandler::InitValue() const
 }
 
 
-std::any TSys::BoolHandler::CopyValue(std::any source) const
+std::any TSys::BoolHandler::CopyValue(const std::any& source) const
 {
     bool value = std::any_cast<bool>(source);
 
@@ -447,21 +460,27 @@ std::string TSys::BoolHandler::PythonName() const
 }
 
 
-std::any TSys::BoolHandler::FromPython(boost::python::object obj) const
+std::string TSys::BoolHandler::PythonModule() const
+{
+    return "builtins";
+}
+
+
+std::any TSys::BoolHandler::FromPython(const boost::python::object& obj) const
 {
     bool value = boost::python::extract<bool>(obj);
     return std::make_any<bool>(value);
 }
 
 
-boost::python::object TSys::BoolHandler::ToPython(std::any value) const
+boost::python::object TSys::BoolHandler::ToPython(const std::any& value) const
 {
     return boost::python::object(std::any_cast<bool>(value));
 }
 
 
-void TSys::BoolHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
-                                                  rapidjson::Document& doc) const
+void TSys::BoolHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
+                                       rapidjson::Document& doc) const
 {
     bool success;
     rapidjson::Value stringValue(rapidjson::kStringType);
@@ -481,15 +500,15 @@ void TSys::BoolHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
 }
 
 
-std::any TSys::BoolHandler::DeserializeValue(std::any, rapidjson::Value& value) const
+std::any TSys::BoolHandler::DeserializeValue(const std::any&, rapidjson::Value& value) const
 {
     bool result = value.GetArray()[1].GetBool();
     return std::make_any<bool>(result);
 }
 
 
-void TSys::BoolHandler::SerializeConstruction(std::any v, rapidjson::Value& value,
-                                                         rapidjson::Document& doc) const
+void TSys::BoolHandler::SerializeConstruction(const std::any& v, rapidjson::Value& value,
+                                              rapidjson::Document& doc) const
 {
     bool success;
     std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(v.type().hash_code(), success);
@@ -561,7 +580,7 @@ std::any TSys::IntHandler::InitValue() const
 }
 
 
-std::any TSys::IntHandler::CopyValue(std::any source) const
+std::any TSys::IntHandler::CopyValue(const std::any& source) const
 {
     int value = int(std::any_cast<int>(source));
 
@@ -575,21 +594,27 @@ std::string TSys::IntHandler::PythonName() const
 }
 
 
-std::any TSys::IntHandler::FromPython(boost::python::object obj) const
+std::string TSys::IntHandler::PythonModule() const
+{
+    return "builtins";
+}
+
+
+std::any TSys::IntHandler::FromPython(const boost::python::object& obj) const
 {
     int value = boost::python::extract<int>(obj);
     return std::make_any<int>(value);
 }
 
 
-boost::python::object TSys::IntHandler::ToPython(std::any value) const
+boost::python::object TSys::IntHandler::ToPython(const std::any& value) const
 {
     return boost::python::object(std::any_cast<int>(value));
 }
 
 
-void TSys::IntHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
-                                             rapidjson::Document& doc) const
+void TSys::IntHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
+                                      rapidjson::Document& doc) const
 {
     bool success;
     rapidjson::Value stringValue(rapidjson::kStringType);
@@ -609,15 +634,15 @@ void TSys::IntHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
 }
 
 
-std::any TSys::IntHandler::DeserializeValue(std::any, rapidjson::Value& value) const
+std::any TSys::IntHandler::DeserializeValue(const std::any&, rapidjson::Value& value) const
 {
     int result = value.GetArray()[1].GetInt();
     return std::make_any<int>(result);
 }
 
 
-void TSys::IntHandler::SerializeConstruction(std::any v, rapidjson::Value& value,
-                                                    rapidjson::Document& doc) const
+void TSys::IntHandler::SerializeConstruction(const std::any& v, rapidjson::Value& value,
+                                             rapidjson::Document& doc) const
 {
     bool success;
     std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(v.type().hash_code(), success);
@@ -683,7 +708,7 @@ std::any TSys::FloatHandler::InitValue() const
 }
 
 
-std::any TSys::FloatHandler::CopyValue(std::any source) const
+std::any TSys::FloatHandler::CopyValue(const std::any& source) const
 {
     float value = float(std::any_cast<float>(source));
 
@@ -703,21 +728,27 @@ std::string TSys::FloatHandler::PythonName() const
 }
 
 
-std::any TSys::FloatHandler::FromPython(boost::python::object obj) const
+std::string TSys::FloatHandler::PythonModule() const
+{
+    return "builtins";
+}
+
+
+std::any TSys::FloatHandler::FromPython(const boost::python::object& obj) const
 {
     float value = boost::python::extract<float>(obj);
     return std::make_any<float>(value);
 }
 
 
-boost::python::object TSys::FloatHandler::ToPython(std::any value) const
+boost::python::object TSys::FloatHandler::ToPython(const std::any& value) const
 {
     return boost::python::object(std::any_cast<float>(value));
 }
 
 
-void TSys::FloatHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
-                                               rapidjson::Document& doc) const
+void TSys::FloatHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
+                                        rapidjson::Document& doc) const
 {
     bool success;
 
@@ -736,15 +767,15 @@ void TSys::FloatHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
 }
 
 
-std::any TSys::FloatHandler::DeserializeValue(std::any, rapidjson::Value& value) const
+std::any TSys::FloatHandler::DeserializeValue(const std::any&, rapidjson::Value& value) const
 {
     float result = value.GetArray()[1].GetFloat();
     return std::make_any<float>(result);
 }
 
 
-void TSys::FloatHandler::SerializeConstruction(std::any v, rapidjson::Value& value,
-                                                      rapidjson::Document& doc) const
+void TSys::FloatHandler::SerializeConstruction(const std::any& v, rapidjson::Value& value,
+                                               rapidjson::Document& doc) const
 {
     IntHandler().SerializeConstruction(v, value, doc);
 }
@@ -800,7 +831,7 @@ std::any TSys::DoubleHandler::InitValue() const
 }
 
 
-std::any TSys::DoubleHandler::CopyValue(std::any source) const
+std::any TSys::DoubleHandler::CopyValue(const std::any& source) const
 {
     auto value = double(std::any_cast<double>(source));
 
@@ -820,21 +851,27 @@ std::string TSys::DoubleHandler::PythonName() const
 }
 
 
-std::any TSys::DoubleHandler::FromPython(boost::python::object obj) const
+std::string TSys::DoubleHandler::PythonModule() const
+{
+    return "builtins";
+}
+
+
+std::any TSys::DoubleHandler::FromPython(const boost::python::object& obj) const
 {
     double value = boost::python::extract<double>(obj);
     return std::make_any<double>(value);
 }
 
 
-boost::python::object TSys::DoubleHandler::ToPython(std::any value) const
+boost::python::object TSys::DoubleHandler::ToPython(const std::any& value) const
 {
     return boost::python::object(std::any_cast<double>(value));
 }
 
 
-void TSys::DoubleHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
-                                                rapidjson::Document& doc) const
+void TSys::DoubleHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
+                                         rapidjson::Document& doc) const
 {
     bool success;
 
@@ -853,15 +890,15 @@ void TSys::DoubleHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue
 }
 
 
-std::any TSys::DoubleHandler::DeserializeValue(std::any, rapidjson::Value& value) const
+std::any TSys::DoubleHandler::DeserializeValue(const std::any&, rapidjson::Value& value) const
 {
     double result = value.GetArray()[1].GetDouble();
     return std::make_any<double>(result);
 }
 
 
-void TSys::DoubleHandler::SerializeConstruction(std::any v, rapidjson::Value& value,
-                                                       rapidjson::Document& doc) const
+void TSys::DoubleHandler::SerializeConstruction(const std::any& v, rapidjson::Value& value,
+                                                rapidjson::Document& doc) const
 {
     IntHandler().SerializeConstruction(v, value, doc);
 }
@@ -943,7 +980,7 @@ std::any TSys::EnumHandler::InitValue() const
 }
 
 
-std::any TSys::EnumHandler::CopyValue(std::any source) const
+std::any TSys::EnumHandler::CopyValue(const std::any& source) const
 {
     Enum value = Enum(std::any_cast<Enum>(source));
 
@@ -963,21 +1000,27 @@ std::string TSys::EnumHandler::PythonName() const
 }
 
 
-std::any TSys::EnumHandler::FromPython(boost::python::object obj) const
+std::any TSys::EnumHandler::FromPython(const boost::python::object& obj) const
 {
     auto value = boost::python::extract<Enum>(obj);
     return std::make_any<Enum>(value);
 }
 
 
-boost::python::object TSys::EnumHandler::ToPython(std::any value) const
+std::string TSys::EnumHandler::PythonModule() const
+{
+    return "builtins";
+}
+
+
+boost::python::object TSys::EnumHandler::ToPython(const std::any& value) const
 {
     return boost::python::object(std::any_cast<Enum>(value));
 }
 
 
-void TSys::EnumHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
-                                              rapidjson::Document& doc) const
+void TSys::EnumHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
+                                       rapidjson::Document& doc) const
 {
     bool success;
     rapidjson::Value stringValue(rapidjson::kStringType);
@@ -997,7 +1040,7 @@ void TSys::EnumHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
 }
 
 
-std::any TSys::EnumHandler::DeserializeValue(std::any v, rapidjson::Value& value) const
+std::any TSys::EnumHandler::DeserializeValue(const std::any& v, rapidjson::Value& value) const
 {
     int result = value.GetArray()[1].GetInt();
 
@@ -1008,8 +1051,8 @@ std::any TSys::EnumHandler::DeserializeValue(std::any v, rapidjson::Value& value
 }
 
 
-void TSys::EnumHandler::SerializeConstruction(std::any v, rapidjson::Value& value,
-                                                     rapidjson::Document& doc) const
+void TSys::EnumHandler::SerializeConstruction(const std::any& v, rapidjson::Value& value,
+                                              rapidjson::Document& doc) const
 {
     IntHandler().SerializeConstruction(v, value, doc);
 
@@ -1045,7 +1088,7 @@ std::any TSys::EnumHandler::DeserializeConstruction(rapidjson::Value& value) con
 }
 
 
-size_t TSys::EnumHandler::ValueHash(std::any value) const
+size_t TSys::EnumHandler::ValueHash(const std::any& value) const
 {
     std::string str;
     Enum en = std::any_cast<Enum>(value);
@@ -1094,7 +1137,7 @@ std::any TSys::AnyHandler::InitValue() const
 }
 
 
-std::any TSys::AnyHandler::CopyValue(std::any source) const
+std::any TSys::AnyHandler::CopyValue(const std::any& source) const
 {
     AnyValue value = std::any_cast<AnyValue>(source);
 
@@ -1114,21 +1157,21 @@ std::string TSys::AnyHandler::PythonName() const
 }
 
 
-std::any TSys::AnyHandler::FromPython(boost::python::object obj) const
+std::any TSys::AnyHandler::FromPython(const boost::python::object& obj) const
 {
     AnyValue v = boost::python::extract<AnyValue>(obj);
     return std::make_any<AnyValue>(v);
 }
 
 
-boost::python::object TSys::AnyHandler::ToPython(std::any value) const
+boost::python::object TSys::AnyHandler::ToPython(const std::any& value) const
 {
     return boost::python::object(std::any_cast<AnyValue>(value));
 }
 
 
-void TSys::AnyHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
-                                    rapidjson::Document& doc) const
+void TSys::AnyHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
+                                      rapidjson::Document& doc) const
 {
     AnyValue value = std::any_cast<AnyValue>(v);
     size_t hash = value.Hash();
@@ -1149,7 +1192,7 @@ void TSys::AnyHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
 }
 
 
-std::any TSys::AnyHandler::DeserializeValue(std::any v, rapidjson::Value& value) const
+std::any TSys::AnyHandler::DeserializeValue(const std::any& v, rapidjson::Value& value) const
 {
     AnyValue val = std::any_cast<AnyValue>(v);
 
@@ -1180,8 +1223,8 @@ std::any TSys::AnyHandler::DeserializeValue(std::any v, rapidjson::Value& value)
 }
 
 
-void TSys::AnyHandler::SerializeConstruction(std::any v, rapidjson::Value& value,
-                                           rapidjson::Document& doc) const
+void TSys::AnyHandler::SerializeConstruction(const std::any& v, rapidjson::Value& value,
+                                             rapidjson::Document& doc) const
 {
 
 }
@@ -1193,7 +1236,7 @@ std::any TSys::AnyHandler::DeserializeConstruction(rapidjson::Value& value) cons
 }
 
 
-size_t TSys::AnyHandler::ValueHash(std::any val) const
+size_t TSys::AnyHandler::ValueHash(const std::any& val) const
 {
     auto anyval = std::any_cast<AnyValue>(val);
     auto* handler = TypeRegistry::GetRegistry()->GetTypeHandle(anyval.Hash());
@@ -1206,13 +1249,31 @@ size_t TSys::AnyHandler::ValueHash(std::any val) const
 }
 
 
+bool TSys::AnyHandler::CompareValue(const std::any& v1, const std::any& v2) const
+{
+    AnyValue av1;
+    AnyValue av2;
+    try
+    {
+        av1 = std::any_cast<AnyValue>(v1);
+        av2 = std::any_cast<AnyValue>(v2);
+    }
+    catch(std::bad_any_cast&)
+    {
+        return false;
+    }
+
+    return (av1 == av2);
+}
+
+
 std::any TSys::NoneHandler::InitValue() const
 {
     return std::make_any<None>(None());
 }
 
 
-std::any TSys::NoneHandler::CopyValue(std::any source) const
+std::any TSys::NoneHandler::CopyValue(const std::any& source) const
 {
 
     return InitValue();
@@ -1231,32 +1292,32 @@ std::string TSys::NoneHandler::PythonName() const
 }
 
 
-std::any TSys::NoneHandler::FromPython(boost::python::object obj) const
+std::any TSys::NoneHandler::FromPython(const boost::python::object& obj) const
 {
     return InitValue();
 }
 
 
-boost::python::object TSys::NoneHandler::ToPython(std::any value) const
+boost::python::object TSys::NoneHandler::ToPython(const std::any& value) const
 {
     return {};
 }
 
-void TSys::NoneHandler::SerializeValue(std::any v, rapidjson::Value& jsonValue,
-                                              rapidjson::Document& doc) const
+void TSys::NoneHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
+                                       rapidjson::Document& doc) const
 {
 
 }
 
 
-std::any TSys::NoneHandler::DeserializeValue(std::any v, rapidjson::Value& value) const
+std::any TSys::NoneHandler::DeserializeValue(const std::any& v, rapidjson::Value& value) const
 {
     return InitValue();
 }
 
 
-void TSys::NoneHandler::SerializeConstruction(std::any v, rapidjson::Value& value,
-                                                     rapidjson::Document& doc) const
+void TSys::NoneHandler::SerializeConstruction(const std::any& v, rapidjson::Value& value,
+                                              rapidjson::Document& doc) const
 {
 
 }
@@ -1268,7 +1329,7 @@ std::any TSys::NoneHandler::DeserializeConstruction(rapidjson::Value& value) con
 }
 
 
-size_t TSys::NoneHandler::ValueHash(std::any val) const
+size_t TSys::NoneHandler::ValueHash(const std::any& val) const
 {
     return 0;
 }
