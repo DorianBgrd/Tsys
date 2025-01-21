@@ -71,69 +71,6 @@ TSys::TypeRegistry::TypeRegistry()
 }
 
 
-size_t TSys::TypeRegistry::GetHashFromName(const std::string& name, bool& success)
-{
-    for (auto* h : handlers)
-    {
-        if (h->Name() == name)
-        {
-            success = true;
-            return h->Hash();
-        }
-    }
-
-    success = false;
-    return {};
-}
-
-
-std::string TSys::TypeRegistry::GetNameFromHash(size_t hash, bool& success)
-{
-    for (auto* h : handlers)
-    {
-        if (h->Hash() == hash)
-        {
-            success = true;
-            return h->Name();
-        }
-    }
-    success = false;
-    return {};
-}
-
-
-std::string TSys::TypeRegistry::GetApiNameFromHash(size_t hash, bool& success)
-{
-    for (auto* h : handlers)
-    {
-        if (h->Hash() == hash)
-        {
-            success = true;
-            return h->ApiName();
-        }
-    }
-
-    success = false;
-    return {};
-}
-
-
-size_t TSys::TypeRegistry::GetHashFromPythonType(const std::string& name, bool& success)
-{
-    for (auto* h : handlers)
-    {
-        if (h->Name() == name)
-        {
-            success = true;
-            return h->Hash();
-        }
-    }
-
-    success = false;
-	return {};
-}
-
-
 bool TSys::TypeRegistry::RegisterType(
             size_t hash, TypeHandler* handler,
             bool force
@@ -170,38 +107,6 @@ bool TSys::TypeRegistry::IsRegistered(size_t hash) const
 }
 
 
-size_t TSys::TypeRegistry::HashFromPythonTypeName(const std::string& name, bool& success)
-{
-    for (auto* h : handlers)
-    {
-        if (h->PythonName() == name)
-        {
-            success = true;
-            return h->Hash();
-        }
-    }
-
-    success = false;
-    return {};
-}
-
-
-size_t TSys::TypeRegistry::HashFromApiName(const std::string& name, bool& success)
-{
-    for (auto* h : handlers)
-    {
-        if (h->ApiName() == name)
-        {
-            success = true;
-            return h->Hash();
-        }
-    }
-
-    success = false;
-    return {};
-}
-
-
 TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(size_t hash)
 {
     for (auto* h : handlers)
@@ -216,35 +121,13 @@ TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(size_t hash)
 }
 
 
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromName(const std::string& name)
+TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(const std::any& value)
 {
-    for (auto* h : handlers)
-    {
-        if (h->Name() == name)
-        {
-            return h;
-        }
-    }
-
-    return nullptr;
+    return GetTypeHandle(value.type().hash_code());
 }
 
 
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromPythonName(const std::string& name)
-{
-    for (auto* h : handlers)
-    {
-        if (h->PythonName() == name)
-        {
-            return h;
-        }
-    }
-
-    return nullptr;
-}
-
-
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromPythonObject(
+TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(
         const boost::python::object& o)
 {
     for (auto* h : handlers)
@@ -259,7 +142,7 @@ TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromPythonObject(
 }
 
 
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandleFromApiName(const std::string& name)
+TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(const std::string& name)
 {
     for (auto* h : handlers)
     {

@@ -350,11 +350,6 @@ namespace TSys
             return typeid(Enum).hash_code();
         }
 
-        std::string Name() const override
-        {
-            return std::string(typeid(Enum).name());
-        }
-
         std::string PythonName() const override;
 
         std::string PythonModule() const override;
@@ -382,22 +377,7 @@ namespace TSys
 
         size_t ValueHash(const std::any& value) const override;
 
-        bool CompareValue(const std::any& v1, const std::any& v2) const override
-        {
-            Enum ev1;
-            Enum ev2;
-            try
-            {
-                ev1 = std::any_cast<Enum>(v1);
-                ev2 = std::any_cast<Enum>(v2);
-            }
-            catch(std::bad_any_cast&)
-            {
-                return false;
-            }
-
-            return (ev1 == ev2);
-        }
+        bool CompareValue(const std::any& v1, const std::any& v2) const override;
     };
 
 
@@ -407,15 +387,7 @@ namespace TSys
 
         std::string ApiName() const override;
 
-        size_t Hash() const override
-        {
-            return typeid(AnyValue).hash_code();
-        }
-
-        std::string Name() const override
-        {
-            return std::string(typeid(AnyValue).name());
-        }
+        size_t Hash() const override;
 
         std::string PythonName() const override;
 
@@ -451,10 +423,7 @@ namespace TSys
     public:
         None() = default;
 
-        bool operator ==(const None& other)
-        {
-            return true;
-        }
+        bool operator==(const None& other) const;
     };
 
 

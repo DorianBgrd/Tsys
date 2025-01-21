@@ -198,7 +198,7 @@ boost::python::object TSys::AnyValue::Python_Get()
 
 bool TSys::AnyValue::Python_Set(boost::python::object val)
 {
-    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandleFromPythonObject(val);
+    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandle(val);
     if (!handler)
     {
         return false;
@@ -353,11 +353,9 @@ boost::python::object TSys::StringHandler::ToPython(const std::any& value) const
 void TSys::StringHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                                          rapidjson::Document& doc) const
 {
-    bool success;
     rapidjson::Value stringValue(rapidjson::kStringType);
 
-    size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetTypeHandle(v)->ApiName();
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -383,8 +381,7 @@ std::any TSys::StringHandler::DeserializeValue(const std::any&, rapidjson::Value
 void TSys::StringHandler::SerializeConstruction(const std::any& v, rapidjson::Value& value,
                                                 rapidjson::Document& doc) const
 {
-    bool success;
-    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(v.type().hash_code(), success);
+    std::string vname = TypeRegistry::GetRegistry()->GetTypeHandle(v)->ApiName();
 
     // jsonValue.PushBack(rapidjson::StringRef(vname.c_str()), doc.GetAllocator());
     value.PushBack(
@@ -485,8 +482,7 @@ void TSys::BoolHandler::SerializeValue(const std::any& v, rapidjson::Value& json
     bool success;
     rapidjson::Value stringValue(rapidjson::kStringType);
 
-    size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetTypeHandle(v)->ApiName();
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -511,7 +507,7 @@ void TSys::BoolHandler::SerializeConstruction(const std::any& v, rapidjson::Valu
                                               rapidjson::Document& doc) const
 {
     bool success;
-    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(v.type().hash_code(), success);
+    std::string vname = TypeRegistry::GetRegistry()->GetTypeHandle(v)->ApiName();
 
     // jsonValue.PushBack(rapidjson::StringRef(vname.c_str()), doc.GetAllocator());
     value.PushBack(
@@ -616,11 +612,9 @@ boost::python::object TSys::IntHandler::ToPython(const std::any& value) const
 void TSys::IntHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                                       rapidjson::Document& doc) const
 {
-    bool success;
     rapidjson::Value stringValue(rapidjson::kStringType);
 
-    size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetTypeHandle(v)->ApiName();
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -644,8 +638,7 @@ std::any TSys::IntHandler::DeserializeValue(const std::any&, rapidjson::Value& v
 void TSys::IntHandler::SerializeConstruction(const std::any& v, rapidjson::Value& value,
                                              rapidjson::Document& doc) const
 {
-    bool success;
-    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(v.type().hash_code(), success);
+    std::string vname = TypeRegistry::GetRegistry()->GetTypeHandle(v)->ApiName();
 
     // jsonValue.PushBack(rapidjson::StringRef(vname.c_str()), doc.GetAllocator());
     value.PushBack(
@@ -750,10 +743,7 @@ boost::python::object TSys::FloatHandler::ToPython(const std::any& value) const
 void TSys::FloatHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                                         rapidjson::Document& doc) const
 {
-    bool success;
-
-    size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetTypeHandle(v)->ApiName();
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -873,10 +863,7 @@ boost::python::object TSys::DoubleHandler::ToPython(const std::any& value) const
 void TSys::DoubleHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                                          rapidjson::Document& doc) const
 {
-    bool success;
-
-    size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetTypeHandle(v)->ApiName();
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -1022,11 +1009,9 @@ boost::python::object TSys::EnumHandler::ToPython(const std::any& value) const
 void TSys::EnumHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonValue,
                                        rapidjson::Document& doc) const
 {
-    bool success;
     rapidjson::Value stringValue(rapidjson::kStringType);
 
-    size_t vcode = v.type().hash_code();
-    std::string vname = TypeRegistry::GetRegistry()->GetApiNameFromHash(vcode, success);
+    std::string vname = TypeRegistry::GetRegistry()->GetTypeHandle(v)->ApiName();
 
     jsonValue.PushBack(rapidjson::Value().SetString(
                                vname.c_str(), (rapidjson::SizeType)vname.size(), doc.GetAllocator()),
@@ -1106,6 +1091,25 @@ size_t TSys::EnumHandler::ValueHash(const std::any& value) const
 }
 
 
+bool TSys::EnumHandler::CompareValue(
+        const std::any& v1,
+        const std::any& v2)
+        const
+{
+    Enum ev1;
+    Enum ev2;
+    size_t hash = Hash();
+    if (v1.type().hash_code() != hash ||
+        v2.type().hash_code() != hash)
+    {
+        return false;
+    }
+
+    return (std::any_cast<Enum>(v1) ==
+            std::any_cast<Enum>(v2));
+}
+
+
 
 template<typename From>
 struct ToAny: TSys::TypeConverter
@@ -1148,6 +1152,12 @@ std::any TSys::AnyHandler::CopyValue(const std::any& source) const
 std::string TSys::AnyHandler::ApiName() const
 {
     return "Any";
+}
+
+
+size_t TSys::AnyHandler::Hash() const
+{
+    return typeid(AnyValue).hash_code();
 }
 
 
@@ -1206,19 +1216,13 @@ std::any TSys::AnyHandler::DeserializeValue(const std::any& v, rapidjson::Value&
 
     rapidjson::Value& typeValue = value[1];
 
-    bool success = false;
-    size_t hash = TypeRegistry::GetRegistry()->HashFromApiName(name.GetString(), success);
-    if (!success)
+    auto* handle = TypeRegistry::GetRegistry()->GetTypeHandle(v);
+    if (!handle)
     {
-        return std::make_any<AnyValue>(val);
+        return InitValue();
     }
 
-    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandle(hash);
-    if (handler)
-    {
-        val.SetInput(handler->DeserializeValue(handler->InitValue(), typeValue));
-    }
-
+    val.SetInput(handle->DeserializeValue(handle->InitValue(), typeValue));
     return std::make_any<AnyValue>(val);
 }
 
@@ -1264,6 +1268,12 @@ bool TSys::AnyHandler::CompareValue(const std::any& v1, const std::any& v2) cons
     }
 
     return (av1 == av2);
+}
+
+
+bool TSys::None::operator==(const None &other) const
+{
+    return true;
 }
 
 

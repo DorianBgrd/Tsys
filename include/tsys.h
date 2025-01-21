@@ -148,12 +148,6 @@ namespace TSys
         virtual size_t Hash() const = 0;
 
         /**
-         * Returns c++ type name.
-         * @return std::string type name.
-         */
-        virtual std::string Name() const = 0;
-
-        /**
          * Returns optional python module.
          * @return std::string module name.
          */
@@ -210,11 +204,6 @@ namespace TSys
             return typeid(T).hash_code();
         }
 
-        std::string Name() const override
-        {
-            return std::string(typeid(T).name());
-        }
-
         bool CompareValue(const std::any& v1, const std::any& v2) const override
         {
             return (std::any_cast<T>(v1) == std::any_cast<T>(v2));
@@ -253,18 +242,6 @@ namespace TSys
         TypeRegistry();
 
 	public:
-		size_t GetHashFromName(const std::string& name, bool& success);
-
-		std::string GetNameFromHash(size_t hash, bool& success);
-
-        std::string GetApiNameFromHash(size_t hash, bool& success);
-
-        size_t GetHashFromPythonType(const std::string& name, bool& success);
-
-        size_t HashFromPythonTypeName(const std::string& name, bool& success);
-
-        size_t HashFromApiName(const std::string& name, bool& success);
-
         bool RegisterType(size_t hash, TypeHandler* handler, bool force=false);
 
         bool IsRegistered(size_t hash) const;
@@ -275,27 +252,24 @@ namespace TSys
                 bool force=false
         )
         {
-            size_t hash = typeid(T).hash_code();
-            return RegisterType(hash, handler, force);
+            return RegisterType(typeid(T).hash_code(),
+                                handler, force);
         }
 
         template <class T, class H>
         bool RegisterType(bool force=false)
         {
-            size_t hash = typeid(T).hash_code();
-            TypeHandler* handler = new H();
-            return RegisterType(hash, handler, force);
+            return RegisterType(typeid(T).hash_code(),
+                                new H(), force);
         }
 
         TypeHandler* GetTypeHandle(size_t hash);
 
-        TypeHandler* GetTypeHandleFromName(const std::string& name);
+        TypeHandler* GetTypeHandle(const std::any& value);
 
-        TypeHandler* GetTypeHandleFromPythonName(const std::string& name);
+        TypeHandler* GetTypeHandle(const boost::python::object& o);
 
-        TypeHandler* GetTypeHandleFromPythonObject(const boost::python::object& o);
-
-        TypeHandler* GetTypeHandleFromApiName(const std::string& name);
+        TypeHandler* GetTypeHandle(const std::string& apiName);
 
         template<class T>
         TypeHandler* GetTypeHandle()
