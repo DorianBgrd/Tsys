@@ -16,15 +16,22 @@ bool TSys::TypeHandler::HoldsPythonObject(const boost::python::object& o) const
     std::string mod = PythonModule();
     std::string cls = PythonName();
 
+    boost::python::object pythonClass = o.attr("__class__");
+    std::string pythonClassName = boost::python::extract<std::string>(
+            pythonClass.attr("__name__"));
+
+    if (pythonClassName == "type")
+    {
+        boost::python::object clsname = o.attr("__name__");
+        pythonClassName = boost::python::extract<std::string>(clsname);
+    }
+
     if (!mod.empty())
     {
         const std::string& pymodule = boost::python::extract<const std::string&>(
                 o.attr("__module__"));
 
-        const std::string& pyname = boost::python::extract<const std::string&>(
-                o.attr("__class__").attr("__name__"));
-
-        return (pymodule + "." + pyname) == (mod + "." + cls);
+        return (pymodule + "." + pythonClassName) == (mod + "." + cls);
     }
 
     const std::string& pyobjame = boost::python::extract<const std::string&>(o.attr("__name__"));
@@ -153,6 +160,12 @@ TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(const std::string& name)
     }
 
     return nullptr;
+}
+
+
+TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(const char* name)
+{
+    return GetTypeHandle(std::string(name));
 }
 
 

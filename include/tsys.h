@@ -271,6 +271,8 @@ namespace TSys
 
         TypeHandler* GetTypeHandle(const std::string& apiName);
 
+        TypeHandler* GetTypeHandle(const char* apiName);
+
         template<class T>
         TypeHandler* GetTypeHandle()
         {
