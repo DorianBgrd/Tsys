@@ -187,7 +187,7 @@ std::any TSys::AnyValue::InputValue() const
 
 boost::python::object TSys::AnyValue::Python_Get()
 {
-    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandle(Hash());
+    auto handler = TypeRegistry::GetRegistry()->GetTypeHandle(Hash());
     if (!handler)
     {
         return {};
@@ -198,7 +198,7 @@ boost::python::object TSys::AnyValue::Python_Get()
 
 bool TSys::AnyValue::Python_Set(boost::python::object val)
 {
-    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandle(val);
+    auto handler = TypeRegistry::GetRegistry()->GetTypeHandle(val);
     if (!handler)
     {
         return false;
@@ -215,7 +215,7 @@ std::any TSys::AnyValue::ConvertTo(size_t hash)
         return value;
     }
 
-    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandle(hash);
+    auto handler = TypeRegistry::GetRegistry()->GetTypeHandle(hash);
     if (!handler)
     {
         return std::make_any<InvalidAnyCast>(InvalidAnyCast());
@@ -231,7 +231,7 @@ bool  TSys::AnyValue::operator == (AnyValue& other)
         return false;
     }
 
-    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandle(Hash());
+    auto handler = TypeRegistry::GetRegistry()->GetTypeHandle(Hash());
 
     if (!handler)
     {
@@ -248,7 +248,7 @@ bool TSys::AnyValue::operator == (std::any& other)
         return false;
     }
 
-    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandle(Hash());
+    auto handler = TypeRegistry::GetRegistry()->GetTypeHandle(Hash());
     if (!handler)
     {
         return false;
@@ -1188,7 +1188,7 @@ void TSys::AnyHandler::SerializeValue(const std::any& v, rapidjson::Value& jsonV
 
     rapidjson::Value& inValue = rapidjson::Value().SetArray();
 
-    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandle(hash);
+    auto handler = TypeRegistry::GetRegistry()->GetTypeHandle(hash);
     if(!handler)
     {
         return;
@@ -1216,7 +1216,7 @@ std::any TSys::AnyHandler::DeserializeValue(const std::any& v, rapidjson::Value&
 
     rapidjson::Value& typeValue = value[1];
 
-    auto* handle = TypeRegistry::GetRegistry()->GetTypeHandle(v);
+    auto handle = TypeRegistry::GetRegistry()->GetTypeHandle(v);
     if (!handle)
     {
         return InitValue();
@@ -1243,7 +1243,7 @@ std::any TSys::AnyHandler::DeserializeConstruction(rapidjson::Value& value) cons
 size_t TSys::AnyHandler::ValueHash(const std::any& val) const
 {
     auto anyval = std::any_cast<AnyValue>(val);
-    auto* handler = TypeRegistry::GetRegistry()->GetTypeHandle(anyval.Hash());
+    auto handler = TypeRegistry::GetRegistry()->GetTypeHandle(anyval.Hash());
     if (!handler)
     {
         return 0;

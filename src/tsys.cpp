@@ -79,91 +79,105 @@ TSys::TypeRegistry::TypeRegistry()
 
 
 bool TSys::TypeRegistry::RegisterType(
-            size_t hash, TypeHandler* handler,
+            const std::type_index& t,
+            const TypeHandlerPtr& handler,
             bool force
 		)
 {
-    if (!force && handlers.find(handler) != handlers.end())
+    if (!force && handlers.find(t) != handlers.end())
     {
         return false;
     }
 
-    handlers.insert(handler);
+    handlers[t] = handler;
     return true;
 }
 
 
-class MatchHash
+bool TSys::TypeRegistry::IsRegistered(const std::type_index& t) const
 {
-    size_t hash;
-public:
-    MatchHash(size_t h) {hash = h;}
+    return (handlers.find(t) != handlers.end());
+}
 
-    bool operator()(TSys::TypeHandler* f) const
+
+bool TSys::TypeRegistry::IsRegistered(const std::type_info& t) const
+{
+    return IsRegistered(std::type_index(t));
+}
+
+
+bool TSys::TypeRegistry::IsRegistered(const std::any& t) const
+{
+    return IsRegistered(t.type());
+}
+
+
+bool TSys::TypeRegistry::IsRegistered(const char* t) const
+{
+    return static_cast<bool>(GetTypeHandle(t));
+}
+
+
+TSys::TypeHandlerPtr TSys::TypeRegistry::GetTypeHandle(const std::type_info& t) const
+{
+    return GetTypeHandle(std::type_index(t));
+}
+
+
+TSys::TypeHandlerPtr TSys::TypeRegistry::GetTypeHandle(const std::type_index& t) const
+{
+    auto iter = handlers.find(t);
+    if (iter == handlers.end())
+        return {};
+
+    return iter->second;
+}
+
+
+TSys::TypeHandlerPtr TSys::TypeRegistry::GetTypeHandle(const std::any& value) const
+{
+    return GetTypeHandle(value.type());
+}
+
+
+TSys::TypeHandlerPtr TSys::TypeRegistry::GetTypeHandle(
+        const boost::python::object& o) const
+{
+    auto cmp = [o](
+            const std::pair<std::type_index, TypeHandlerPtr>& h
+    ) -> bool
     {
-        return (f->Hash() == hash);
-    }
-};
+        return h.second->HoldsPythonObject(o);
+    };
 
+    auto h = std::find_if(handlers.begin(), handlers.end(), cmp);
 
-bool TSys::TypeRegistry::IsRegistered(size_t hash) const
-{
-    auto h = std::find_if(handlers.begin(), handlers.end(), MatchHash(hash));
+    if (h == handlers.end())
+        return {};
 
-    return (h != handlers.end());
+    return h->second;
 }
 
 
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(size_t hash)
+TSys::TypeHandlerPtr TSys::TypeRegistry::GetTypeHandle(const std::string& name) const
 {
-    for (auto* h : handlers)
+    auto cmp = [name](
+            const std::pair<std::type_index, TypeHandlerPtr>& h
+    ) -> bool
     {
-        if (h->Hash() == hash)
-        {
-            return h;
-        }
-    }
+        return h.second->ApiName() == name;
+    };
 
-    return nullptr;
+    auto h = std::find_if(handlers.begin(), handlers.end(), cmp);
+
+    if (h == handlers.end())
+        return {};
+
+    return h->second;
 }
 
 
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(const std::any& value)
-{
-    return GetTypeHandle(value.type().hash_code());
-}
-
-
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(
-        const boost::python::object& o)
-{
-    for (auto* h : handlers)
-    {
-        if (h->HoldsPythonObject(o))
-        {
-            return h;
-        }
-    }
-
-    return nullptr;
-}
-
-
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(const std::string& name)
-{
-    for (auto* h : handlers)
-    {
-        if (h->ApiName() == name)
-        {
-            return h;
-        }
-    }
-
-    return nullptr;
-}
-
-
-TSys::TypeHandler* TSys::TypeRegistry::GetTypeHandle(const char* name)
+TSys::TypeHandlerPtr TSys::TypeRegistry::GetTypeHandle(const char* name) const
 {
     return GetTypeHandle(std::string(name));
 }

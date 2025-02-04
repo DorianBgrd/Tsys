@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <typeinfo>
+#include <typeindex>
 #include <any>
 #include <functional>
 
@@ -51,21 +52,21 @@ namespace TSys
     struct TSYS_API TypeHandler
     {
     protected:
-        std::unordered_map<size_t, ConverterHandle> converters;
+        std::unordered_map<std::type_index, ConverterHandle> converters;
 
     public:
         template<typename From, typename Converter>
         void RegisterConverter()
         {
-            this->converters[typeid(From).hash_code()] = std::make_shared<Converter>();
+            this->converters[std::type_index(typeid(From))] = std::make_shared<Converter>();
         }
 
-        ConverterHandle GetConverter(std::any from) const
+        ConverterHandle GetConverter(const std::any& from) const
         {
-            size_t sourceHash = from.type().hash_code();
-            if (converters.find(sourceHash) != converters.end())
+            auto idx = std::type_index(from.type());
+            if (converters.find(idx) != converters.end())
             {
-                return converters.at(sourceHash);
+                return converters.at(idx);
             }
 
             return {};
@@ -216,7 +217,7 @@ namespace TSys
         template<typename From>
         void RegisterConstructibleConverter()
         {
-            this->converters[typeid(From).hash_code()] = std::make_shared<StaticCastConverter<From, T>>();
+            this->converters[std::type_index(typeid(From))] = std::make_shared<StaticCastConverter<From, T>>();
         }
 
         size_t ValueHash(const std::any& val) const override
@@ -228,13 +229,16 @@ namespace TSys
     };
 
 
+    typedef std::shared_ptr<TypeHandler> TypeHandlerPtr;
+
+
     class TSYS_API TypeRegistry
 	{
     private:
         static TypeRegistry* registry;
 
 	protected:
-        std::set<TypeHandler*> handlers;
+        std::unordered_map<std::type_index, TypeHandlerPtr> handlers;
 
         /**
          * Constructor (default).
@@ -242,41 +246,58 @@ namespace TSys
         TypeRegistry();
 
 	public:
-        bool RegisterType(size_t hash, TypeHandler* handler, bool force=false);
-
-        bool IsRegistered(size_t hash) const;
+        bool RegisterType(
+                const std::type_index& t,
+                const TypeHandlerPtr& handler,
+                bool force=false
+        );
 
         template<class T>
         bool RegisterType(
-                TypeHandler* handler,
+                const TypeHandlerPtr& handler,
                 bool force=false
         )
         {
-            return RegisterType(typeid(T).hash_code(),
-                                handler, force);
+            return RegisterType(
+                    std::type_index(typeid(T)),
+                    handler, force
+            );
         }
 
         template <class T, class H>
         bool RegisterType(bool force=false)
         {
-            return RegisterType(typeid(T).hash_code(),
-                                new H(), force);
+            return RegisterType(
+                    std::type_index(typeid(T)),
+                    std::make_shared<H>(),
+                    force
+            );
         }
 
-        TypeHandler* GetTypeHandle(size_t hash);
+        bool IsRegistered(const std::type_index& t) const;
 
-        TypeHandler* GetTypeHandle(const std::any& value);
+        bool IsRegistered(const std::type_info& t) const;
 
-        TypeHandler* GetTypeHandle(const boost::python::object& o);
+        bool IsRegistered(const std::any& value) const;
 
-        TypeHandler* GetTypeHandle(const std::string& apiName);
+        bool IsRegistered(const char* t) const;
 
-        TypeHandler* GetTypeHandle(const char* apiName);
+        TypeHandlerPtr GetTypeHandle(const std::type_info& t) const;
+
+        TypeHandlerPtr GetTypeHandle(const std::type_index& t) const;
+
+        TypeHandlerPtr GetTypeHandle(const std::any& value) const;
+
+        TypeHandlerPtr GetTypeHandle(const boost::python::object& o) const;
+
+        TypeHandlerPtr GetTypeHandle(const std::string& apiName) const;
+
+        TypeHandlerPtr GetTypeHandle(const char* apiName) const;
 
         template<class T>
-        TypeHandler* GetTypeHandle()
+        TypeHandlerPtr GetTypeHandle() const
         {
-            return GetTypeHandle(typeid(T).hash_code());
+            return GetTypeHandle(typeid(T));
         }
 
         static TypeRegistry* GetRegistry();

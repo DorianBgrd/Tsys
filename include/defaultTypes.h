@@ -166,7 +166,7 @@ namespace TSys
                 return anyval.InputValue();
             }
 
-            auto* handle = TypeRegistry::GetRegistry()->GetTypeHandle(to.type().hash_code());
+            auto handle = TypeRegistry::GetRegistry()->GetTypeHandle(to.type().hash_code());
             if (!handle)
             {
                 return to;
