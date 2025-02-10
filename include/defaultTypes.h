@@ -17,6 +17,17 @@
 
 namespace TSys
 {
+    template <typename T>
+    std::any ExtractPythonToAny(const boost::python::object& pyObj)
+    {
+        boost::python::extract<T> extractor(pyObj);
+        if (!extractor.check())
+            return {};
+
+        return std::make_any<T>(extractor());
+    }
+
+
     enum class Status
     {
         None,
@@ -189,10 +200,6 @@ namespace TSys
 
         std::string ApiName() const override;
 
-        std::string PythonName() const override;
-
-        std::string PythonModule() const override;
-
         std::any InitValue() const override;
 
         std::any CopyValue(const std::any& source) const override;
@@ -224,10 +231,6 @@ namespace TSys
 
         std::any CopyValue(const std::any& source) const override;
 
-        std::string PythonName() const override;
-
-        std::string PythonModule() const override;
-
         std::any FromPython(const boost::python::object& obj) const override;
 
         boost::python::object ToPython(const std::any& value) const override;
@@ -256,10 +259,6 @@ namespace TSys
 
         std::any CopyValue(const std::any& source) const override;
 
-        std::string PythonName() const override;
-
-        std::string PythonModule() const override;
-
         std::any FromPython(const boost::python::object& obj) const override;
 
         boost::python::object ToPython(const std::any& value) const override;
@@ -282,10 +281,6 @@ namespace TSys
         FloatHandler();
 
         std::string ApiName() const override;
-
-        std::string PythonName() const override;
-
-        std::string PythonModule() const override;
 
         std::any InitValue() const override;
 
@@ -313,10 +308,6 @@ namespace TSys
         DoubleHandler();
 
         std::string ApiName() const override;
-
-        std::string PythonName() const override;
-
-        std::string PythonModule() const override;
 
         std::any InitValue() const override;
 
@@ -349,10 +340,6 @@ namespace TSys
         {
             return typeid(Enum).hash_code();
         }
-
-        std::string PythonName() const override;
-
-        std::string PythonModule() const override;
 
         std::any InitValue() const override;
 
@@ -388,8 +375,6 @@ namespace TSys
         std::string ApiName() const override;
 
         size_t Hash() const override;
-
-        std::string PythonName() const override;
 
         std::any InitValue() const override;
 
@@ -430,8 +415,6 @@ namespace TSys
     struct NoneHandler: TSys::BaseTypeHandler<None>
     {
         std::string ApiName() const override;
-
-        std::string PythonName() const override;
 
         std::any InitValue() const override;
 

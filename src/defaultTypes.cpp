@@ -320,18 +320,6 @@ std::string TSys::StringHandler::ApiName() const
 }
 
 
-std::string TSys::StringHandler::PythonName() const
-{
-    return "str";
-}
-
-
-std::string TSys::StringHandler::PythonModule() const
-{
-    return "builtins";
-}
-
-
 std::any TSys::StringHandler::FromPython(const boost::python::object& obj) const
 {
     if (!PyUnicode_Check(obj.ptr()))
@@ -451,22 +439,9 @@ std::any TSys::BoolHandler::CopyValue(const std::any& source) const
 }
 
 
-std::string TSys::BoolHandler::PythonName() const
-{
-    return "bool";
-}
-
-
-std::string TSys::BoolHandler::PythonModule() const
-{
-    return "builtins";
-}
-
-
 std::any TSys::BoolHandler::FromPython(const boost::python::object& obj) const
 {
-    bool value = boost::python::extract<bool>(obj);
-    return std::make_any<bool>(value);
+    return ExtractPythonToAny<bool>(obj);
 }
 
 
@@ -584,22 +559,9 @@ std::any TSys::IntHandler::CopyValue(const std::any& source) const
 }
 
 
-std::string TSys::IntHandler::PythonName() const
-{
-    return "int";
-}
-
-
-std::string TSys::IntHandler::PythonModule() const
-{
-    return "builtins";
-}
-
-
 std::any TSys::IntHandler::FromPython(const boost::python::object& obj) const
 {
-    int value = boost::python::extract<int>(obj);
-    return std::make_any<int>(value);
+    return ExtractPythonToAny<int>(obj);
 }
 
 
@@ -715,22 +677,9 @@ std::string TSys::FloatHandler::ApiName() const
 }
 
 
-std::string TSys::FloatHandler::PythonName() const
-{
-    return "float";
-}
-
-
-std::string TSys::FloatHandler::PythonModule() const
-{
-    return "builtins";
-}
-
-
 std::any TSys::FloatHandler::FromPython(const boost::python::object& obj) const
 {
-    float value = boost::python::extract<float>(obj);
-    return std::make_any<float>(value);
+    return ExtractPythonToAny<float>(obj);
 }
 
 
@@ -835,22 +784,9 @@ std::string TSys::DoubleHandler::ApiName() const
 }
 
 
-std::string TSys::DoubleHandler::PythonName() const
-{
-    return "float";
-}
-
-
-std::string TSys::DoubleHandler::PythonModule() const
-{
-    return "builtins";
-}
-
-
 std::any TSys::DoubleHandler::FromPython(const boost::python::object& obj) const
 {
-    double value = boost::python::extract<double>(obj);
-    return std::make_any<double>(value);
+    return ExtractPythonToAny<double>(obj);
 }
 
 
@@ -981,22 +917,9 @@ std::string TSys::EnumHandler::ApiName() const
 }
 
 
-std::string TSys::EnumHandler::PythonName() const
-{
-    return "Enum";
-}
-
-
 std::any TSys::EnumHandler::FromPython(const boost::python::object& obj) const
 {
-    auto value = boost::python::extract<Enum>(obj);
-    return std::make_any<Enum>(value);
-}
-
-
-std::string TSys::EnumHandler::PythonModule() const
-{
-    return "builtins";
+    return ExtractPythonToAny<Enum>(obj);
 }
 
 
@@ -1161,16 +1084,9 @@ size_t TSys::AnyHandler::Hash() const
 }
 
 
-std::string TSys::AnyHandler::PythonName() const
-{
-    return "AnyValue";
-}
-
-
 std::any TSys::AnyHandler::FromPython(const boost::python::object& obj) const
 {
-    AnyValue v = boost::python::extract<AnyValue>(obj);
-    return std::make_any<AnyValue>(v);
+    return ExtractPythonToAny<AnyValue>(obj);
 }
 
 
@@ -1291,12 +1207,6 @@ std::any TSys::NoneHandler::CopyValue(const std::any& source) const
 
 
 std::string TSys::NoneHandler::ApiName() const
-{
-    return "None";
-}
-
-
-std::string TSys::NoneHandler::PythonName() const
 {
     return "None";
 }

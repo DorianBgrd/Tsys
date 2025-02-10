@@ -133,8 +133,6 @@ namespace TSys
          */
         virtual boost::python::object ToPython(const std::any&) const = 0;
 
-        bool HoldsPythonObject(const boost::python::object& o) const;
-
         /**
          * Copies value.
          * @param std::any source: source value.
@@ -147,18 +145,6 @@ namespace TSys
          * @return size_t hash.
          */
         virtual size_t Hash() const = 0;
-
-        /**
-         * Returns optional python module.
-         * @return std::string module name.
-         */
-        virtual std::string PythonModule() const;
-
-        /**
-         * Returns python type name.
-         * @return std::string type name.
-         */
-        virtual std::string PythonName() const = 0;
 
         /**
          * Returns name used in Api when referencing
@@ -287,8 +273,6 @@ namespace TSys
         TypeHandlerPtr GetTypeHandle(const std::type_index& t) const;
 
         TypeHandlerPtr GetTypeHandle(const std::any& value) const;
-
-        TypeHandlerPtr GetTypeHandle(const boost::python::object& o) const;
 
         TypeHandlerPtr GetTypeHandle(const std::string& apiName) const;
 
