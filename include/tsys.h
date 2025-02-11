@@ -268,6 +268,8 @@ namespace TSys
 
         bool IsRegistered(const char* t) const;
 
+        std::vector<std::string> RegisteredTypes() const;
+
         TypeHandlerPtr GetTypeHandle(const std::type_info& t) const;
 
         TypeHandlerPtr GetTypeHandle(const std::type_index& t) const;

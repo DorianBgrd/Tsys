@@ -9,7 +9,7 @@ std::any TSys::TypeHandler::ConvertFrom(const std::any& sourceValue, std::any cu
 {
     if (!CanConvertFrom(sourceValue))
     {
-        return currentValue;
+        return {};
     }
 
     ConverterHandle converter = GetConverter(sourceValue);
@@ -80,6 +80,18 @@ bool TSys::TypeRegistry::IsRegistered(const std::any& t) const
 bool TSys::TypeRegistry::IsRegistered(const char* t) const
 {
     return static_cast<bool>(GetTypeHandle(t));
+}
+
+
+std::vector<std::string> TSys::TypeRegistry::RegisteredTypes() const
+{
+    std::vector<std::string> types;
+    for (const auto& handler : handlers)
+    {
+        types.push_back(handler.second->ApiName());
+    }
+
+    return types;
 }
 
 
