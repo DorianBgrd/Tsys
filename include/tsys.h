@@ -23,25 +23,18 @@
 
 namespace TSys
 {
-    struct TypeConverter
-    {
-        [[nodiscard]]
-        virtual std::any Convert(std::any from, std::any to) const = 0;
-    };
-
-
     template<typename From, typename To>
-    struct StaticCastConverter: public TypeConverter
+    struct StaticCastConverter
     {
         [[nodiscard]]
-        std::any Convert(std::any from, std::any to) const override
+        std::any operator()(const std::any& from, const std::any& current) const
         {
             return std::make_any<To>(static_cast<To>(std::any_cast<From>(from)));
         }
     };
 
 
-    typedef std::shared_ptr<TypeConverter> ConverterHandle;
+    typedef std::function<std::any(const std::any&, const std::any&)> Converter;
 
 
     /**
@@ -52,25 +45,22 @@ namespace TSys
     struct TSYS_API TypeHandler
     {
     protected:
-        std::unordered_map<std::type_index, ConverterHandle> converters;
+        std::unordered_map<std::type_index, Converter> converters;
 
     public:
         template<typename From, typename Converter>
         void RegisterConverter()
         {
-            this->converters[std::type_index(typeid(From))] = std::make_shared<Converter>();
+            this->converters[std::type_index(typeid(From))] = Converter();
         }
 
-        ConverterHandle GetConverter(const std::any& from) const
+        template<typename From>
+        void RegisterConverter(Converter cvrt)
         {
-            auto idx = std::type_index(from.type());
-            if (converters.find(idx) != converters.end())
-            {
-                return converters.at(idx);
-            }
-
-            return {};
+            this->converters[std::type_index(typeid(From))] = cvrt;
         }
+
+        Converter GetConverter(const std::any& from) const;
 
     public:
         /**
@@ -203,7 +193,7 @@ namespace TSys
         template<typename From>
         void RegisterConstructibleConverter()
         {
-            this->converters[std::type_index(typeid(From))] = std::make_shared<StaticCastConverter<From, T>>();
+            this->converters[std::type_index(typeid(From))] = StaticCastConverter<From, T>();
         }
 
         size_t ValueHash(const std::any& val) const override

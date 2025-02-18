@@ -166,29 +166,29 @@ namespace TSys
     };
 
 
-    struct AnyConverter: public TSys::TypeConverter
+    struct AnyConverter
     {
         [[nodiscard]]
-        std::any Convert(std::any from, std::any to) const override
+        std::any operator()(const std::any& from, const std::any& current) const
         {
             auto anyval = std::any_cast<TSys::AnyValue>(from);
-            if (anyval.Hash() == to.type().hash_code())
+            if (anyval.Hash() == current.type().hash_code())
             {
                 return anyval.InputValue();
             }
 
-            auto handle = TypeRegistry::GetRegistry()->GetTypeHandle(to.type().hash_code());
+            auto handle = TypeRegistry::GetRegistry()->GetTypeHandle(current.type().hash_code());
             if (!handle)
             {
-                return to;
+                return current;
             }
 
             if (!handle->CanConvertFrom(anyval.Hash()))
             {
-                return to;
+                return current;
             }
 
-            return handle->ConvertFrom(anyval.InputValue(), to);
+            return handle->ConvertFrom(anyval.InputValue(), current);
         }
     };
 

@@ -5,6 +5,18 @@
 #include "include/defaultTypes.h"
 
 
+TSys::Converter TSys::TypeHandler::GetConverter(const std::any& from) const
+{
+    auto idx = std::type_index(from.type());
+    if (converters.find(idx) != converters.end())
+    {
+        return converters.at(idx);
+    }
+
+    return {};
+}
+
+
 std::any TSys::TypeHandler::ConvertFrom(const std::any& sourceValue, std::any currentValue) const
 {
     if (!CanConvertFrom(sourceValue))
@@ -12,15 +24,15 @@ std::any TSys::TypeHandler::ConvertFrom(const std::any& sourceValue, std::any cu
         return {};
     }
 
-    ConverterHandle converter = GetConverter(sourceValue);
+    Converter converter = GetConverter(sourceValue);
 
-    return converter->Convert(sourceValue, currentValue);
+    return converter(sourceValue, currentValue);
 }
 
 
 bool TSys::TypeHandler::CanConvertFrom(const std::any& value) const
 {
-    return bool(GetConverter(value).get());
+    return bool(GetConverter(value));
 }
 
 

@@ -260,11 +260,11 @@ bool TSys::AnyValue::operator == (std::any& other)
 
 // String
 template<typename N>
-struct NumberToStr: public TSys::TypeConverter
+struct NumberToStr
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
-        int val = std::any_cast<N>(from);
+        N val = std::any_cast<N>(from);
 
         try
         {
@@ -273,15 +273,31 @@ struct NumberToStr: public TSys::TypeConverter
         }
         catch(...)
         {
-            return to;
+            return {};
         }
     }
 };
 
 
-struct EnumToStr: public TSys::TypeConverter
+template<typename C>
+struct CharTypeToStr
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
+    {
+        return std::make_any<std::string>(
+                std::string(
+                        std::any_cast<C>(
+                                from
+                        )
+                )
+        );
+    }
+};
+
+
+struct EnumToStr
+{
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         auto enum_ = std::any_cast<TSys::Enum>(from);
         return std::make_any<std::string>(enum_.CurrentValue());
@@ -293,10 +309,12 @@ struct EnumToStr: public TSys::TypeConverter
 TSys::StringHandler::StringHandler()
 {
     RegisterConverter<int, NumberToStr<int>>();
-    RegisterConverter<float, NumberToStr<float>>();
+    RegisterConverter<float>(NumberToStr<float>());
     RegisterConverter<double, NumberToStr<double>>();
     RegisterConverter<Enum, EnumToStr>();
     RegisterConverter<AnyValue, AnyConverter>();
+    RegisterConverter<const char*, CharTypeToStr<const char*>>();
+    RegisterConverter<char*, CharTypeToStr<char*>>();
 }
 
 
@@ -389,9 +407,9 @@ std::any TSys::StringHandler::DeserializeConstruction(rapidjson::Value& value) c
 
 
 // Bool
-struct StrToBool: TSys::TypeConverter
+struct StrToBool
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         bool empty = std::any_cast<std::string>(from).empty();
         return std::make_any<bool>(empty);
@@ -399,9 +417,9 @@ struct StrToBool: TSys::TypeConverter
 };
 
 
-struct EnumToBool: TSys::TypeConverter
+struct EnumToBool
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         return std::make_any<bool>(std::any_cast<TSys::Enum>(from).CurrentIndex());
     }
@@ -481,7 +499,6 @@ std::any TSys::BoolHandler::DeserializeValue(const std::any&, rapidjson::Value& 
 void TSys::BoolHandler::SerializeConstruction(const std::any& v, rapidjson::Value& value,
                                               rapidjson::Document& doc) const
 {
-    bool success;
     std::string vname = TypeRegistry::GetRegistry()->GetTypeHandle(v)->ApiName();
 
     // jsonValue.PushBack(rapidjson::StringRef(vname.c_str()), doc.GetAllocator());
@@ -502,9 +519,9 @@ std::any TSys::BoolHandler::DeserializeConstruction(rapidjson::Value& value) con
 
 
 // Int
-struct StrToInt: public TSys::TypeConverter
+struct StrToInt
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         try
         {
@@ -518,9 +535,9 @@ struct StrToInt: public TSys::TypeConverter
 };
 
 
-struct EnumToInt: public TSys::TypeConverter
+struct EnumToInt
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         auto en = std::any_cast<TSys::Enum>(from);
         return std::make_any<int>(en.CurrentIndex());
@@ -620,9 +637,9 @@ std::any TSys::IntHandler::DeserializeConstruction(rapidjson::Value& value) cons
 
 
 // Float
-struct StrToFloat: public TSys::TypeConverter
+struct StrToFloat
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         try
         {
@@ -636,9 +653,9 @@ struct StrToFloat: public TSys::TypeConverter
 };
 
 
-struct EnumToFloat: public TSys::TypeConverter
+struct EnumToFloat
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         auto en = std::any_cast<TSys::Enum>(from);
         return std::make_any<float>((float)en.CurrentIndex());
@@ -727,9 +744,9 @@ std::any TSys::FloatHandler::DeserializeConstruction(rapidjson::Value& value) co
 
 
 // Double
-struct StrToDouble: public TSys::TypeConverter
+struct StrToDouble
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         try
         {
@@ -743,9 +760,9 @@ struct StrToDouble: public TSys::TypeConverter
 };
 
 
-struct EnumToDouble: public TSys::TypeConverter
+struct EnumToDouble
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         auto en = std::any_cast<TSys::Enum>(from);
         return std::make_any<double>((double)en.CurrentIndex());
@@ -834,9 +851,9 @@ std::any TSys::DoubleHandler::DeserializeConstruction(rapidjson::Value& value) c
 
 
 // Enum
-struct BoolToEnum: public TSys::TypeConverter
+struct BoolToEnum
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         auto en = std::any_cast<TSys::Enum>(to);
         en.SetCurrentIndex((int)std::any_cast<bool>(from));
@@ -844,9 +861,9 @@ struct BoolToEnum: public TSys::TypeConverter
     }
 };
 
-struct IntToEnum: public TSys::TypeConverter
+struct IntToEnum
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         auto en = std::any_cast<TSys::Enum>(to);
         en.SetCurrentIndex(std::any_cast<int>(from));
@@ -854,9 +871,9 @@ struct IntToEnum: public TSys::TypeConverter
     }
 };
 
-struct FloatToEnum: public TSys::TypeConverter
+struct FloatToEnum
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         auto en = std::any_cast<TSys::Enum>(to);
         en.SetCurrentIndex((int)std::any_cast<float>(from));
@@ -864,9 +881,9 @@ struct FloatToEnum: public TSys::TypeConverter
     }
 };
 
-struct DoubleToEnum: public TSys::TypeConverter
+struct DoubleToEnum
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         auto en = std::any_cast<TSys::Enum>(to);
         en.SetCurrentIndex((int)std::any_cast<double>(from));
@@ -875,9 +892,9 @@ struct DoubleToEnum: public TSys::TypeConverter
 };
 
 
-struct StrToEnum: public TSys::TypeConverter
+struct StrToEnum
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         auto en = std::any_cast<TSys::Enum>(to);
         en.SetCurrentValue(std::any_cast<std::string>(from));
@@ -1034,10 +1051,9 @@ bool TSys::EnumHandler::CompareValue(
 
 
 
-template<typename From>
-struct ToAny: TSys::TypeConverter
+struct ToAny
 {
-    std::any Convert(std::any from, std::any to) const override
+    std::any operator()(const std::any& from, const std::any& to) const
     {
         auto val = std::any_cast<TSys::AnyValue>(to);
         val.SetInput(from);
@@ -1050,11 +1066,11 @@ struct ToAny: TSys::TypeConverter
 // Any
 TSys::AnyHandler::AnyHandler(): TSys::TypeHandler()
 {
-    RegisterConverter<int, ToAny<int>>();
-    RegisterConverter<float, ToAny<float>>();
-    RegisterConverter<double, ToAny<double>>();
-    RegisterConverter<std::string, ToAny<std::string>>();
-    RegisterConverter<Enum, ToAny<Enum>>();
+    RegisterConverter<int, ToAny>();
+    RegisterConverter<float, ToAny>();
+    RegisterConverter<double, ToAny>();
+    RegisterConverter<std::string, ToAny>();
+    RegisterConverter<Enum, ToAny>();
 }
 
 
