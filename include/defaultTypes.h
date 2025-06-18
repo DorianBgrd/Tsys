@@ -6,6 +6,7 @@
 //#endif
 
 #include <any>
+#include <variant>
 #include <string>
 #include <map>
 #include <vector>
@@ -27,13 +28,6 @@ namespace TSys
         return std::make_any<T>(extractor());
     }
 
-
-    enum class Status
-    {
-        None,
-        Failed,
-        Success
-    };
 
     struct Success
     {
@@ -189,6 +183,77 @@ namespace TSys
             }
 
             return handle->ConvertFrom(anyval.InputValue(), current);
+        }
+    };
+
+
+    class TSYS_API VariantValue
+    {
+        std::set<std::type_index> variantTypes;
+        std::any variantValue;
+
+    public:
+        template<class... Type>
+        VariantValue(): variantTypes(typeid(Type)...)
+        {
+
+        }
+
+        template<typename T>
+        bool Set(const T& value)
+        {
+            if (variantTypes.find(typeid(T)) == variantTypes.end())
+            {
+                return false;
+            }
+
+            variantValue = value;
+            return true;
+        }
+
+
+        template<typename T>
+        bool Get(T& value)
+        {
+            auto typeindex = std::type_index(typeid(T));
+            if (variantTypes.find(typeindex) == variantTypes.end())
+            {
+                return false;
+            }
+
+            auto valueTypeIndex = std::type_index(variantValue.type());
+            if (valueTypeIndex == typeindex)
+            {
+                value = std::any_cast<T>(variantValue);
+                return true;
+            }
+
+            auto handler = TypeRegistry::GetRegistry()->GetTypeHandle<T>();
+            if (!handler || !handler.CanConvertFrom(valueTypeIndex))
+            {
+                return false;
+            }
+
+            value = handler.ConvertFrom(variantValue);
+            return true;
+        }
+
+
+        std::any GetAnyValue() const
+        {
+            return variantValue;
+        }
+
+
+        bool SetAnyValue(const std::any& value)
+        {
+            if (variantTypes.find(value.type()) == variantTypes.end())
+            {
+                return false;
+            }
+
+            variantValue = value;
+            return true;
         }
     };
 
