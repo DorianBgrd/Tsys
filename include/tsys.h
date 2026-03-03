@@ -62,6 +62,14 @@ namespace TSys
 
         Converter GetConverter(const std::any& from) const;
 
+        Converter GetConverter(const std::type_index& from) const;
+
+        template<class T>
+        Converter GetConverter() const
+        {
+            return GetConverter(typeid(T));
+        }
+
     public:
         /**
          * Serializes type value.
@@ -168,6 +176,12 @@ namespace TSys
           * @return bool convertible from.
           */
         virtual bool CanConvertFrom(const std::any& value) const;
+
+        template<class T>
+        bool CanConvertFrom() const
+        {
+            return bool(GetConverter<T>());
+        }
 
         bool operator==(TypeHandler* h) const;
     };

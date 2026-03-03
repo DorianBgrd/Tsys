@@ -7,7 +7,13 @@
 
 TSys::Converter TSys::TypeHandler::GetConverter(const std::any& from) const
 {
-    auto idx = std::type_index(from.type());
+    return GetConverter(from.type());
+}
+
+
+TSys::Converter TSys::TypeHandler::GetConverter(const std::type_index& from) const
+{
+    auto idx = std::type_index(from);
     if (converters.find(idx) != converters.end())
     {
         return converters.at(idx);
