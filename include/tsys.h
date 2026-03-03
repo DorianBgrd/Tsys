@@ -177,10 +177,19 @@ namespace TSys
           */
         virtual bool CanConvertFrom(const std::any& value) const;
 
+
+        template<class T>
+        bool ManagesType() const
+        {
+            return (typeid(T).hash_code() == Hash());
+        }
+
         template<class T>
         bool CanConvertFrom() const
         {
-            return bool(GetConverter<T>());
+            if (!ManagesType<T>())
+                return bool(GetConverter<T>());
+            return true;
         }
 
         bool operator==(TypeHandler* h) const;
