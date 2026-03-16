@@ -3,14 +3,9 @@ project(Tsys)
 
 set(CMAKE_CXX_STANDARD 17)
 
+include(Third-parties.cmake)
+
 add_definitions(/DTSYS_API_EXPORT)
-
-set(Boost_USE_STATIC_LIBS OFF)
-set(Boost_DIR $ENV{BOOST_DIR})
-
-find_package(Python 3.11 REQUIRED COMPONENTS Development Interpreter)
-find_package(Boost 1.82.0 COMPONENTS python311 REQUIRED HINTS $ENV{BOOST_ROOT})
-
 
 set(
         TSYS_SOURCES

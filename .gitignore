@@ -1,3 +1,7 @@
 # Project exclude paths
 /cmake-build-debug/
 /cmake-build-release/
+/cmake-build-debug-python310/
+/cmake-build-release-python310/
+/cmake-build-debug-python311/
+/cmake-build-release-python311/
