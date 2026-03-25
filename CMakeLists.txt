@@ -67,8 +67,7 @@ target_link_libraries(
         Tsys
         PUBLIC
         ${Boost_LIBRARIES}
-        Python::Python
-        Python::Module
+        ${Python_LINK_LIBRARIES}
 )
 
 
@@ -100,8 +99,7 @@ target_link_libraries(
         Tsys_Static
         PUBLIC
         ${Boost_LIBRARIES}
-        Python::Python
-        Python::Module
+        ${Python_LINK_LIBRARIES}
 )
 
 
