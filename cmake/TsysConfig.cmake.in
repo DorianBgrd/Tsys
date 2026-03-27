@@ -3,7 +3,11 @@
 include("${CMAKE_CURRENT_LIST_DIR}/TsysTargets.cmake")
 
 get_target_property(_INCLUDE_DIRS Tsys::Tsys INTERFACE_INCLUDE_DIRECTORIES)
-get_target_property(_LIBRARIES Tsys::Tsys LIBRARIES)
+
+string(TOUPPER ${CMAKE_BUILD_TYPE} _BUILD_TYPE)
+
+get_target_property(_LIBRARIES Tsys::Tsys IMPORTED_LOCATION_${_BUILD_TYPE})
+get_target_property(_DEPENDENCIES Tsys::Tsys INTERFACE_LINK_LIBRARIES)
 
 set(Tsys_INCLUDE_DIRS ${_INCLUDE_DIRS})
-set(Tsys_LIBRARIES ${_LIBRARIES})
+set(Tsys_LIBRARIES ${_LIBRARIES} ${_DEPENDENCIES})
