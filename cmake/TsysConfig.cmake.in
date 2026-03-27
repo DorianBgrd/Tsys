@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/TsysTargets.cmake")
+
+get_target_property(_INCLUDE_DIRS Tsys::Tsys INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(_LIBRARIES Tsys::Tsys LIBRARIES)
+
+set(Tsys_INCLUDE_DIRS ${_INCLUDE_DIRS})
+set(Tsys_LIBRARIES ${_LIBRARIES})
